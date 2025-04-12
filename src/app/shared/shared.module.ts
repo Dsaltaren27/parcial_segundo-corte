@@ -1,12 +1,22 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HeaderComponent } from './components/header/header.component';
+import { IonicModule } from '@ionic/angular';
+import { FormsModule } from '@angular/forms';
 
 
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    HeaderComponent
+  ],
+  exports: [
+    HeaderComponent
+  ],
   imports: [
-    CommonModule
+    CommonModule,
+    IonicModule,
+    FormsModule
   ]
 })
 export class SharedModule { }

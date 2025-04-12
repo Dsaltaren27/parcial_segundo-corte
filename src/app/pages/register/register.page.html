@@ -1,0 +1,42 @@
+
+  <app-header [backRoute]="'/login'" [title]="'Registro de usuario'"></app-header>
+
+
+<ion-content [fullscreen]="true" class="ion-padding-horizontal">
+  <ion-grid>
+    <ion-row class="ion-justify-content-center">
+      <ion-col size="12" size-md="8" size-lg="6">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Formulario de Registro</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <h1>1. Datos personales</h1>
+            <form  >
+              <ion-item class="form-group">
+                <ion-label position="floating">Nombres:</ion-label>
+                <ion-input type="text" required></ion-input>
+              </ion-item>
+              <ion-item class="form-group">
+                <ion-label position="floating">Apellidos:</ion-label>
+                <ion-input type="text" required></ion-input>
+              </ion-item>
+              <ion-item class="form-group"> 
+                <ion-label position="floating">Correo electronico:</ion-label>
+                <ion-input type="email" required></ion-input>
+              </ion-item >
+              <ion-item class="form-group"> 
+                <ion-label position="floating">Numero de telefono:</ion-label>
+                <ion-input type="phone" required></ion-input>
+              </ion-item >
+              <div class="button-group">
+            <ion-button expand="full" type="submit">Registrar</ion-button>
+              </div>
+            </form>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
+
