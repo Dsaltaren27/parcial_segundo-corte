@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
+
+.content-white {
+  --background: #ffffff;
+}
+
+.card-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 3rem auto;
+  padding: 2rem;
+  border-radius: 20px;
+  max-width: 90%;
+  background-color: #f9f9f9;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  animation: fadeInCard 0.9s ease;
+}
+
+.logo {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 1.2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.8rem;
+  font-weight: 600;
+  color: #2c3e50;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+  margin-bottom: 1.5rem;
+}
+
+.glow-button {
+  --background: #7f5af0;
+  --background-activated: #6246ea;
+  --box-shadow: 0px 0px 12px #7f5af0;
+  font-size: 1.1rem;
+  transition: transform 0.25s ease;
+  border-radius: 12px;
+}
+
+.glow-button:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+@keyframes fadeInCard {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

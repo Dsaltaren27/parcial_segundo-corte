@@ -9,28 +9,38 @@ import { AuthService } from 'src/app/shared/services/auth.service';
   selector: 'app-register',
   templateUrl: './register.page.html',
   styleUrls: ['./register.page.scss'],
+  standalone: false
 })
 export class RegisterPage {
-  nombre = '';
-  apellido = '';
-  telefono = '';
+  name = '';
+  lastname = '';
+  phone = '';
   email = '';
   password = '';
 
   constructor(
     private authservice:AuthService,
-    private auth: Auth,
-    private firestore: Firestore,
     private router: Router
   ) {}
 
   async onRegister() {
     try {
-      await this.authservice.register(this.email, this.password, this.nombre, this.apellido, this.telefono);
-      this.router.navigate(['/home']);
+      await this.authservice.register(this.email, this.password, this.name, this.lastname, this.phone);
+      this.showToast('Registro exitoso!');
+      this.router.navigate(['/login']);
+
     } catch (error) {
       console.error('Error al registrar:', error);
+
     }
+  }
+
+  private async showToast(message: string) {
+    const toast = document.createElement('ion-toast');
+    toast.message = message;
+    toast.duration = 2000;
+    document.body.appendChild(toast);
+    await toast.present();
   }
 }
 

@@ -1,6 +1,4 @@
-
-  <app-header [backRoute]="'/login'" [title]="'Registro de usuario'"></app-header>
-
+<app-header [backRoute]="'/login'" [title]="'Registro de usuario'"></app-header>
 
 <ion-content [fullscreen]="true" class="ion-padding-horizontal">
   <ion-grid>
@@ -12,25 +10,34 @@
           </ion-card-header>
           <ion-card-content>
             <h1>1. Datos personales</h1>
-            <form (ngSubmit)="onRegister()" >
-              <ion-item >
+            <form (ngSubmit)="onRegister()">
+              <ion-item>
                 <ion-label position="floating">Nombres:</ion-label>
-                <ion-input [(ngModel)]="name" type="text" required></ion-input>
+                <ion-input [(ngModel)]="name" name="name" type="text" required></ion-input>
               </ion-item>
+
               <ion-item>
                 <ion-label position="floating">Apellidos:</ion-label>
-                <ion-input [(ngModel)]="lastname"  type="text" required></ion-input>
+                <ion-input [(ngModel)]="lastname" name="lastname" type="text" required></ion-input>
               </ion-item>
-              <ion-item> 
-                <ion-label position="floating">Correo electronico:</ion-label>
-                <ion-input  [(ngModel)]="email"  type="email" required></ion-input>
-              </ion-item >
-              <ion-item> 
-                <ion-label position="floating">Numero de telefono:</ion-label>
-                <ion-input [(ngModel)]="phone"  type="tel" required></ion-input>
-              </ion-item >
-              <div class="button-group">
-            <ion-button expand="full" type="submit" >Registrar</ion-button>
+
+              <ion-item>
+                <ion-label position="floating">Correo electrónico:</ion-label>
+                <ion-input [(ngModel)]="email" name="email" type="email" required></ion-input>
+              </ion-item>
+
+              <ion-item>
+                <ion-label position="floating">Número de teléfono:</ion-label>
+                <ion-input [(ngModel)]="phone" name="phone" type="tel" required></ion-input>
+              </ion-item>
+
+              <ion-item>
+                <ion-label position="floating">Contraseña:</ion-label>
+                <ion-input [(ngModel)]="password" name="password" type="password" required></ion-input>
+              </ion-item>
+
+              <div class="button-group ion-margin-top">
+                <ion-button expand="full" type="submit">Registrar</ion-button>
               </div>
             </form>
           </ion-card-content>
@@ -39,4 +46,3 @@
     </ion-row>
   </ion-grid>
 </ion-content>
-

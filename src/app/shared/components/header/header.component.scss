@@ -1,6 +1,8 @@
 
     ion-header {
-        background-color: rgba(85, 178, 255, 0.95);
+        background: rgba(85, 178, 255, 0.95);
+        color: white;
+       
     }
     
 
@@ -8,7 +10,7 @@ ion-icon{
     font-size: 25px;
 }
 ion-icon:hover{
-    color: #3D9DFF;
+    color: rgba(0, 0, 0, 0.331);
 }
 ion-buttons{
     margin-left: 10px;
@@ -18,4 +20,11 @@ ion-buttons{
     --background: transparent;
     --border-radius: 0;
     --box-shadow: none;
+}
+
+ion-img{
+    width: 50px;
+    height: 50px; /* Asegura que la imagen sea cuadrada */
+    border-radius: 50%;
+    overflow: hidden; 
 }

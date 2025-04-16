@@ -2,50 +2,66 @@ import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { from, Observable, switchMap } from 'rxjs';
+import { from, Observable } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-
   constructor(
     private afAuth: AngularFireAuth,
     private firestore: AngularFirestore,
-    private router: Router,
-  ) { }
+    private router: Router
+  ) {}
 
- async register(email: string, password: string, nombre: string, apellido: string, telefono: string){
-  
-      const userCredential = await this.afAuth.createUserWithEmailAndPassword(email, password);
-      const uid = userCredential.user?.uid;
-      if (uid) {
-        await this.firestore.collection('users').doc(uid).set({
-          nombre,
-          apellido,
-          telefono,
-          email,
-        });
-      }
-      return userCredential; // Return the userCredential if needed
- }
+  // Registro de usuario
+  register(email: string, password: string, nombre: string, apellido: string, telefono: string): Observable<any> {
+    return from(this.afAuth.createUserWithEmailAndPassword(email, password)).pipe(
+      switchMap((userCredential) => {
+        const uid = userCredential.user?.uid;
+        if (uid) {
+          return from(
+            this.firestore.collection('users').doc(uid).set({
+              nombre,
+              apellido,
+              telefono,
+              email,
+            })
+          ).pipe(
+            catchError((error) => {
+              console.error('Error al guardar usuario en Firestore:', error);
+              throw error;
+            })
+          );
+        }
+        throw new Error('UID no disponible');
+      }),
+      catchError((error) => {
+        console.error('Error al registrar:', error);
+        throw error;
+      })
+    );
+  }
 
- login(email:string,password:string){
+  // Inicio de sesión
+  login(email: string, password: string): Observable<any> {
+    return from(this.afAuth.signInWithEmailAndPassword(email, password)).pipe(
+      catchError((error) => {
+        console.error('Error al hacer login:', error);
+        throw error;
+      })
+    );
+  }
 
-  return this.afAuth.signInWithEmailAndPassword(email,password);
+  // Cierre de sesión
+  logout(): void {
+    this.afAuth.signOut();
+    this.router.navigate(['/login']);
+  }
 
- }
-
- logout(){
-
-  this.afAuth.signOut();
-  this.router.navigate(['/login']);
- }
-
-getUser(){
-  return this.afAuth.authState;
+  // Obtener estado de autenticación
+  getUser(): Observable<any> {
+    return this.afAuth.authState;
+  }
 }
-
-}
-
-

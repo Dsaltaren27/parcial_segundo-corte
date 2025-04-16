@@ -1,13 +1,18 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>start</ion-title>
+<ion-header>
+  <ion-toolbar color="rimary-tint">
+    <ion-title class="ion-text-center">Inicio</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">start</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding content-white">
+  <div class="card-container">
+    <img src="assets/img/phone.png" alt="Logo JITCALL" class="logo" />
+
+    <h1 class="title">JITCALL</h1>
+
+    <ion-button color="tertiary" [routerLink]="['/login']" class="glow-button">
+      <ion-icon slot="start" name="log-in-outline"></ion-icon>
+      Iniciar sesión
+    </ion-button>
+  </div>
 </ion-content>

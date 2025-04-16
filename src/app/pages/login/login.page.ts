@@ -1,40 +1,43 @@
 import { Component } from '@angular/core';
-import { NavController, ToastController } from '@ionic/angular';
+import { Router } from '@angular/router';
 import { AuthService } from 'src/app/shared/services/auth.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
-  standalone: false
+  standalone:false
 })
 export class LoginPage {
   email = '';
   password = '';
 
+
   constructor(
     private authService: AuthService,
-    private navCtrl: NavController,
-    private toastCtrl: ToastController
+    private router: Router
   ) {}
 
-  async login() {
+  async onLogin() {
     try {
-      await this.authService.login(this.email, this.password);
-      this.showToast('Inicio de sesión exitoso');
-      this.navCtrl.navigateRoot('/home'); 
-    } catch (err) {
-      const errorMessage = (err as Error).message || 'Error desconocido';
-      this.showToast(`Error al iniciar sesión: ` + errorMessage);
+      const userCredential = await this.authService.login(this.email, this.password).toPromise();
+      if (userCredential && userCredential.user) {
+        this.showToast('Inicio de sesión exitoso!');
+        this.router.navigate(['/home']);
+      } else {
+        alert('Inicio de sesión fallido. Verifique sus credenciales.');
+      }
+    } catch (error) {
+     console.log('Error al iniciar sesión:', error);
+      this.showToast('Correo o contraseña incorrectos');
     }
   }
 
-  async showToast(message: string) {
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 3000,
-      position: 'bottom'
-    });
+  private async showToast(message: string) {
+    const toast = document.createElement('ion-toast');
+    toast.message = message;
+    toast.duration = 2000;
+    document.body.appendChild(toast);
     await toast.present();
   }
 }
