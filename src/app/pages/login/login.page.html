@@ -1,6 +1,6 @@
 <app-header [backRoute]="'/start'" [title]="'login'"></app-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content mode="ios" class="ion-padding">
   <ion-grid>
     <ion-row class="ion-justify-content-center">
       <ion-col size="12" size-md="8" size-lg="6">
@@ -9,13 +9,14 @@
             <ion-card-title>Inicio de Sesión</ion-card-title>
           </ion-card-header>
           <ion-card-content>
+            
             <form (ngSubmit)="onLogin()">
               <ion-item class="form-group">
                 <ion-label position="floating">CORREO:</ion-label>
                 <ion-input [(ngModel)]="email" name="email" type="email" required></ion-input>
               </ion-item>
 
-              <ion-item class="form-group"> 
+              <ion-item class="form-group">
                 <ion-label position="floating">CONTRASEÑA:</ion-label>
                 <ion-input [(ngModel)]="password" name="password" type="password" required></ion-input>
               </ion-item>

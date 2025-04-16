@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from 'src/app/shared/services/auth.service';
 
 @Component({
@@ -18,18 +19,21 @@ export class LoginPage {
     private router: Router
   ) {}
 
+
   async onLogin() {
     try {
-      const userCredential = await this.authService.login(this.email, this.password).toPromise();
+      const userCredential = await firstValueFrom(
+        this.authService.login(this.email, this.password)
+      );
       if (userCredential && userCredential.user) {
-        this.showToast('Inicio de sesión exitoso!');
-        this.router.navigate(['/home']);
+        await this.showToast('Inicio de sesión exitoso!');
+        this.router.navigateByUrl('/home');
       } else {
         alert('Inicio de sesión fallido. Verifique sus credenciales.');
       }
     } catch (error) {
-     console.log('Error al iniciar sesión:', error);
-      this.showToast('Correo o contraseña incorrectos');
+      console.log('Error al iniciar sesión:', error);
+      await this.showToast('Correo o contraseña incorrectos');
     }
   }
 

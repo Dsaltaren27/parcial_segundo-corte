@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
-
 import { map } from 'rxjs/operators';
 import { AuthService } from '../shared/services/auth.service';
 
@@ -14,7 +13,7 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   canActivate() {
-    return this.authService.authState.pipe(
+    return this.authService.getUser().pipe(  
       map(user => {
         if (!user) {
           this.router.navigate(['/login']);

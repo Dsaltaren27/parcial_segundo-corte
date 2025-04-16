@@ -25,13 +25,12 @@ export class RegisterPage {
 
   async onRegister() {
     try {
+      console.log('Guardando datos en Firestore:',  this.name, this.lastname, this.phone);
       await this.authservice.register(this.email, this.password, this.name, this.lastname, this.phone);
       this.showToast('Registro exitoso!');
       this.router.navigate(['/login']);
-
     } catch (error) {
       console.error('Error al registrar:', error);
-
     }
   }
 

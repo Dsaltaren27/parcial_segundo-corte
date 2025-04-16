@@ -14,12 +14,11 @@ export class ContactService {
 
   
   getContacts(userId: string): Observable<any[]> {
-    return this.firestore.collection(`Users/${userId}/contacts`).valueChanges({ idField: 'id' });
+    return this.firestore.collection(`users/${userId}/contacts`).valueChanges({ idField: 'id' });
   }
 
     // Obtener estado de autenticación
-    getUser(): Observable<any> {
-      return this.afAuth.authState;
+    getUser(): Observable<firebase.default.User | null> {
+      return this.afAuth.authState; 
     }
-  
 }

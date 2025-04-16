@@ -16,21 +16,21 @@ export class AuthService {
   ) {}
 
   // Registro de usuario
-  register(email: string, password: string, nombre: string, apellido: string, telefono: string): Observable<any> {
+  register(email: string, password: string, name: string, lastname: string, phone: string): Observable<any> {
     return from(this.afAuth.createUserWithEmailAndPassword(email, password)).pipe(
       switchMap((userCredential) => {
         const uid = userCredential.user?.uid;
         if (uid) {
           return from(
             this.firestore.collection('users').doc(uid).set({
-              nombre,
-              apellido,
-              telefono,
+              name,
+              lastname,
+              phone,
               email,
             })
           ).pipe(
             catchError((error) => {
-              console.error('Error al guardar usuario en Firestore:', error);
+              console.error('Error al guardar datos adicionales:', error);
               throw error;
             })
           );
@@ -43,6 +43,7 @@ export class AuthService {
       })
     );
   }
+  
 
   // Inicio de sesión
   login(email: string, password: string): Observable<any> {

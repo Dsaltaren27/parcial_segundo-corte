@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { MenuController } from '@ionic/angular';
-import { IonicModule } from '@ionic/angular';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { ContactService } from 'src/app/shared/services/contact.service';
-import { Firestore, collection, collectionData } from '@angular/fire/firestore';
-
-
+import firebase from 'firebase/compat/app';
+import { Firestore } from 'firebase/firestore';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -12,31 +12,30 @@ import { Firestore, collection, collectionData } from '@angular/fire/firestore';
   styleUrls: ['./home.page.scss'],
   standalone: false
 })
-export class HomePage {
-  contactos: any[] = []; // Declare the 'contactos' property
+export class HomePage implements OnInit {
+  contactos: any[] = [];
 
-  constructor( 
+  constructor(
     private menuCtrl: MenuController,
-    private firestore: Firestore,
-    private contactService: ContactService,
-    
-  ) { }
-
-
-
-  openMenu() {
-    this.menuCtrl.open('main-menu'); 
-  }
-  
+    private firestore: AngularFirestore,
+    private contactService: ContactService
+  ) {}
   ngOnInit() {
-    this.contactService.getUser().subscribe(user => {
+    this.contactService.getUser().pipe(
+      take(1) // Solo obtener el usuario una vez
+    ).subscribe((user: firebase.User | null) => {
       if (user) {
         const uid = user.uid;
-        const contactsCollection = collection(this.firestore, `Users/${uid}/contacts`);
-        collectionData(contactsCollection, { idField: 'id' }).subscribe(contactos => {
+        this.firestore.collection(`users/${uid}/contacts`).valueChanges({ idField: 'id' }).subscribe((contactos: any[]) => {
           this.contactos = contactos;
+          console.log('Contactos cargados:', this.contactos); 
         });
       }
     });
+  }
+  
+
+  openMenu() {
+    this.menuCtrl.open('main-menu');
   }
 }

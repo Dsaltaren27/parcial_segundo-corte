@@ -1,4 +1,4 @@
-<ion-app>
+<ion-app mode="ios">
   <ion-menu side="start" menuId="main-menu" contentId="main-content">
     <ion-header>
       <ion-toolbar>
@@ -6,6 +6,7 @@
       </ion-toolbar>
     </ion-header>
     <ion-content>
+      
       <ion-list>
         <ion-item button>
           <ion-icon name="home" slot="start"></ion-icon>
@@ -45,21 +46,21 @@
           <ion-card-title>Lista de Contactos</ion-card-title>
         </ion-card-header>
         <ion-card-content>
-  
+          <ion-list *ngIf="contactos.length > 0; else noContacts">
+            <ion-item *ngFor="let contacto of contactos">
+              <ion-label>
+                <h2>{{ contacto.name }}</h2>
+                <p>{{ contacto.phone }}</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+
+          <ng-template #noContacts>
+            <p>No hay contactos guardados.</p>
+          </ng-template>
         </ion-card-content>
       </ion-card>
-      <ion-list *ngIf="contactos.length > 0; else noContacts">
-        <ion-item *ngFor="let contacto of contactos">
-          <ion-label>
-            <h2>{{ contacto.name }}</h2>
-            <p>{{ contacto.phone }}</p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-      
-      <ng-template #noContacts>
-        <p>No hay contactos guardados.</p>
-      </ng-template>
+
 
       <ion-button fill="clear">
         <ion-icon name="person-add" slot="start"></ion-icon>
