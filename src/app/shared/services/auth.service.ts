@@ -36,6 +36,8 @@ export class AuthService {
         phone: Number(phone)
       };
 
+
+      console.log('UID del usuario:', user.uid);
       await this.firestore.collection('users').doc(user.uid).set(userData);
       console.log('Información guardada exitosamente en Firestore');
 

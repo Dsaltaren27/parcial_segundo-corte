@@ -1,11 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { MenuController, AlertController } from '@ionic/angular';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { ContactService } from 'src/app/shared/services/contact.service';
-import { AuthService } from 'src/app/shared/services/auth.service';
-import { take, Subscription } from 'rxjs';
-import { User } from 'src/app/interfaces/user';
+import { Component, OnInit } from '@angular/core';
+import { AlertController, MenuController, ModalController } from '@ionic/angular';
+import { AddContactPage } from '../add-contact/add-contact.page';
 import { Contact } from 'src/app/interfaces/contact';
+import { User } from 'src/app/interfaces/user';
+import { AuthService } from 'src/app/shared/services/auth.service';
+import { ContactService } from 'src/app/shared/services/contact.service';
 import firebase from 'firebase/compat/app';
 
 @Component({
@@ -14,56 +13,51 @@ import firebase from 'firebase/compat/app';
   styleUrls: ['./home.page.scss'],
   standalone: false
 })
-export class HomePage implements OnInit, OnDestroy {
-  contactos: Contact[] = [];
+
+export class HomePage implements OnInit {
+  contacts: Contact[] = [];
   userData: User | null = null;
-  userSubscription: Subscription | null = null;
-  contactosSubscription: Subscription | null = null;
+
 
   constructor(
     private menuCtrl: MenuController,
-    private firestore: AngularFirestore,
     private contactService: ContactService,
+    private modalCtrl: ModalController,
     private authService: AuthService,
-    private alertController: AlertController
+    private alertController: AlertController,
+
   ) {}
 
   ngOnInit() {
-    // Suscripción al usuario autenticado
-    this.userSubscription = this.contactService.getUser().pipe(take(1)).subscribe({
-      next: async (user: firebase.User | null) => {
-        if (user) {
-          const uid = user.uid;
+    this.loadContacts(); // Cargar los contactos al iniciar la página
 
-          // Obtener datos del usuario
-          this.firestore.doc(`users/${uid}`).valueChanges().subscribe({
-            next: (data: any) => {
-              this.userData = { ...data, email: user.email };
-            },
-            error: (err) => {
-              console.error('Error al obtener datos del usuario:', err);
-            }
-          });
-
-          // Obtener los contactos del usuario desde Firestore
-          this.contactosSubscription = this.firestore.collection<Contact>(`users/${uid}/contacts`, ref => ref.orderBy('name'))
-            .valueChanges({ idField: 'id' })
-            .subscribe({
-              next: (contactos: Contact[]) => {
-                this.contactos = contactos;
-                console.log('Contactos cargados:', this.contactos);
-              },
-              error: (err) => {
-                console.error('Error al cargar los contactos:', err);
-              }
-            });
-        }
-      },
-      error: (err) => {
-        console.error('Error al obtener el usuario:', err);
+  
+  }
+  // Cargar los contactos del usuario actual
+  loadContacts() {
+    this.authService.getUser().subscribe(user => {
+      if (user) {
+        const userId = user.uid;
+        this.contactService.getContacts(userId).subscribe((data) => {
+          this.contacts = data;
+        });
       }
     });
   }
+
+  // Abrir el modal para agregar un contacto
+  async openAddContactModal() {
+    const modal = await this.modalCtrl.create({
+      component: AddContactPage
+    });
+
+    modal.onDidDismiss().then(() => {
+      this.loadContacts(); // Recargar los contactos después de agregar uno nuevo
+    });
+
+    await modal.present();
+  }
+
 
   // Método para abrir el menú
   openMenu() {
@@ -92,13 +86,9 @@ export class HomePage implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  // Limpieza de suscripciones cuando el componente se destruye
-  ngOnDestroy() {
-    if (this.userSubscription) {
-      this.userSubscription.unsubscribe();
-    }
-    if (this.contactosSubscription) {
-      this.contactosSubscription.unsubscribe();
-    }
-  }
 }
+
+
+
+
+

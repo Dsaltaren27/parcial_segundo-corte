@@ -15,28 +15,42 @@ export class ContactService {
     private firestore: AngularFirestore
   ) {}
 
-  // Obtener el usuario autenticado
-  getUser(): Observable<firebase.User | null> {
-    return this.afAuth.authState;
+
+  addContact(userId: string, contact: any) {
+    return this.firestore
+      .collection('users')
+      .doc(userId)
+      .collection('contacts')
+      .add(contact);
   }
 
-  // Obtener UID directamente (si lo necesitas en algún otro servicio)
-  getUid(): Observable<string | null> {
-    return this.afAuth.authState.pipe(
-      map(user => user ? user.uid : null)
-    );
+  // Función para obtener los contactos del usuario desde su subcolección
+  getContacts(userId: string): Observable<any[]> {
+    return this.firestore
+      .collection('users')
+      .doc(userId)
+      .collection('contacts')
+      .valueChanges({ idField: 'id' });  // Incluye el ID de cada documento
   }
 
-  // Obtener contactos desde la subcolección `contacts`
-  getContacts(): Observable<any[]> {
-    return this.getUid().pipe(
-      switchMap(uid => {
-        if (uid) {
-          return this.firestore.collection(`users/${uid}/contacts`).valueChanges({ idField: 'id' });
-        } else {
-          return from([]); // si no hay usuario autenticado, se retorna un array vacío
-        }
-      })
-    );
+  // Función para buscar un contacto por teléfono
+  getContactsByPhone(userId: string, phone: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      this.firestore
+        .collection('users')
+        .doc(userId)
+        .collection('contacts', ref => ref.where('phone', '==', phone))
+        .get()
+        .subscribe(snapshot => {
+          if (snapshot.empty) {
+            resolve(false); // No existe un contacto con este teléfono
+          } else {
+            resolve(true); // Ya existe un contacto con este teléfono
+          }
+        }, error => {
+          reject(error);
+        });
+    });
   }
 }
+
