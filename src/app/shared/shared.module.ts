@@ -1,22 +1,31 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HeaderComponent } from './components/header/header.component';
 import { IonicModule } from '@ionic/angular';
-import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { HeaderComponent } from './components/header/header.component';
+import { AuthService } from './services/auth.service';
 
 
 
 @NgModule({
   declarations: [
-    HeaderComponent
+    HeaderComponent,
+ 
   ],
   exports: [
-    HeaderComponent
+    HeaderComponent,
+    RouterModule,
+ 
   ],
   imports: [
     CommonModule,
     IonicModule,
-    FormsModule
+    RouterModule 
+  ],
+  providers: [
+
+    AuthService
+
   ]
 })
 export class SharedModule { }

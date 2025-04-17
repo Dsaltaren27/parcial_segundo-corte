@@ -1,25 +1,27 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { NavController } from '@ionic/angular';
-import { IonHeader } from "@ionic/angular/standalone";
+import { AuthService } from '../../services/auth.service';
+
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
   standalone: false
+  
 })
 export class HeaderComponent  implements OnInit {
 
   @Input() backRoute: string = '/start'; 
-  @Input() title: string = 'Mi App de llamadas';
+  @Input() title: string = 'jitCall';
   
-  constructor(private router:Router) { }
+  constructor(private router: Router, private authservice: AuthService) { }
 
   goBack() {
     this.router.navigate([this.backRoute]);
   }
 
   ngOnInit() {}
+
 
 }

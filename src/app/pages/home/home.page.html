@@ -6,19 +6,18 @@
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      
       <ion-list>
         <ion-item button>
-          <ion-icon name="home" slot="start"></ion-icon>
-          <ion-label>Home</ion-label>
-        </ion-item>
-        <ion-item button>
-          <ion-icon name="settings" slot="start"></ion-icon>
+          <ion-icon name="settings" slot="start" aria-label="Configuraciones"></ion-icon>
           <ion-label>Settings</ion-label>
         </ion-item>
+        <ion-item button (click)="logout()">
+          <ion-icon name="log-out-outline" slot="start" aria-label="Cerrar sesión"></ion-icon>
+          <ion-label>Salir</ion-label>
+        </ion-item>
         <ion-item button>
-          <ion-icon name="help" slot="start"></ion-icon>
-          <ion-label>Help</ion-label>
+          <ion-icon name="help" slot="start" aria-label="Ayuda"></ion-icon>
+          <ion-label>Ayuda</ion-label>
         </ion-item>
       </ion-list>
     </ion-content>
@@ -30,17 +29,12 @@
         <ion-buttons slot="start">
           <ion-menu-button></ion-menu-button>
         </ion-buttons>
-        <ion-title>Home</ion-title>
+        <ion-title>Inicio</ion-title>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content>
-      <ion-header>
-        <ion-toolbar>
-          <ion-searchbar placeholder="Buscar Contacto"></ion-searchbar>
-        </ion-toolbar>
-      </ion-header>
-
+    <ion-content class="ion-padding">
+      <!-- Lista de contactos -->
       <ion-card>
         <ion-card-header>
           <ion-card-title>Lista de Contactos</ion-card-title>
@@ -54,17 +48,16 @@
               </ion-label>
             </ion-item>
           </ion-list>
-
           <ng-template #noContacts>
             <p>No hay contactos guardados.</p>
           </ng-template>
         </ion-card-content>
       </ion-card>
 
-
-      <ion-button fill="clear">
-        <ion-icon name="person-add" slot="start"></ion-icon>
-        <ion-label>Agregar usuario</ion-label>
+      <!-- Botón Agregar contacto -->
+      <ion-button expand="full" fill="solid" color="primary">
+        <ion-icon name="person-add" slot="start" aria-label="Agregar contacto"></ion-icon>
+        Agregar contacto
       </ion-button>
     </ion-content>
   </div>

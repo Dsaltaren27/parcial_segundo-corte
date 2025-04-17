@@ -10,34 +10,40 @@
           </ion-card-header>
           <ion-card-content>
             <h1>1. Datos personales</h1>
-            <form (ngSubmit)="onRegister()">
+            <form (ngSubmit)="onRegister()" #registerForm="ngForm">
+              <!-- Nombres -->
               <ion-item>
                 <ion-label position="floating">Nombres:</ion-label>
                 <ion-input [(ngModel)]="name" name="name" type="text" required></ion-input>
               </ion-item>
 
+              <!-- Apellidos -->
               <ion-item>
                 <ion-label position="floating">Apellidos:</ion-label>
                 <ion-input [(ngModel)]="lastname" name="lastname" type="text" required></ion-input>
               </ion-item>
 
+              <!-- Correo electrónico -->
               <ion-item>
                 <ion-label position="floating">Correo electrónico:</ion-label>
-                <ion-input [(ngModel)]="email" name="email" type="email" required></ion-input>
+                <ion-input [(ngModel)]="email" name="email" type="email" required email></ion-input>
               </ion-item>
 
+              <!-- Número de teléfono -->
               <ion-item>
                 <ion-label position="floating">Número de teléfono:</ion-label>
-                <ion-input [(ngModel)]="phone" name="phone" type="tel" required></ion-input>
+                <ion-input [(ngModel)]="phone" name="phone" type="tel" required pattern="^[0-9]{10}$"></ion-input>
               </ion-item>
 
+              <!-- Contraseña -->
               <ion-item>
                 <ion-label position="floating">Contraseña:</ion-label>
-                <ion-input [(ngModel)]="password" name="password" type="password" required></ion-input>
+                <ion-input [(ngModel)]="password" name="password" type="password" required minlength="6"></ion-input>
               </ion-item>
 
+              <!-- Botón de registro -->
               <div class="button-group ion-margin-top">
-                <ion-button expand="full" type="submit">Registrar</ion-button>
+                <ion-button expand="full" type="submit" [disabled]="!registerForm.valid">Registrar</ion-button>
               </div>
             </form>
           </ion-card-content>
