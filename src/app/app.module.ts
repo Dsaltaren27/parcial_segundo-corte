@@ -24,7 +24,7 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
     IonicModule.forRoot(),
     AppRoutingModule,
     FormsModule,
-    AngularFireModule.initializeApp(environment.firebase),  
+    AngularFireModule.initializeApp(environment.firebase),  // Inicializa Firebase con la configuración del entorno 
     AngularFireAuthModule,  // Módulo para autenticación
     AngularFirestoreModule,  // Módulo para Firestore
   ],

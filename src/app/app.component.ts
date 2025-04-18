@@ -1,4 +1,7 @@
 import { Component } from '@angular/core';
+import { Platform } from '@ionic/angular';
+import { FcmService } from './core/services/fcm.service';
+import { initializeApp } from 'firebase/app';
 
 @Component({
   selector: 'app-root',
@@ -7,5 +10,16 @@ import { Component } from '@angular/core';
   standalone: false,
 })
 export class AppComponent {
-  constructor() {}
+  constructor(private platform: Platform, private fcmservice: FcmService) {
+
+    this.initializeApp(); // Inicializa la aplicación Firebase
+  }
+
+  initializeApp() {
+    this.platform.ready().then(() => {  
+    
+      this.fcmservice.initpush(); // Inicializa el servicio de FCM
+});
+
+}
 }

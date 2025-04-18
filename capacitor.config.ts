@@ -1,9 +1,15 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'PARCIAL_2',
-  webDir: 'www'
+  appId: 'com.jitcall.app',
+  appName: 'jitcall Notification',
+  webDir: 'www',
+
+  plugins: {
+    "PushNotifications": {
+      "presentationOptions": ['alert', 'badge', 'sound'],
+    },
+  }
 };
 
 export default config;
