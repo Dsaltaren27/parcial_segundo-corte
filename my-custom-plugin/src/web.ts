@@ -7,4 +7,10 @@ export class JitCallWeb extends WebPlugin implements JitCallPlugin {
     console.log('ECHO', options);
     return options;
   }
+
+  async testPluginMethod(options: { msg: string }): Promise<{ value: string }> {
+  
+    alert(options.msg);
+    return { value: options.msg };
+  }
 }
