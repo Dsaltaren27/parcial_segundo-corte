@@ -28,9 +28,11 @@ const routes: Routes = [
     path: 'register',
     loadChildren: () => import('./pages/register/register.module').then( m => m.RegisterPageModule),
     canActivate: [NoAuthGuard]  
-  },  {
+  },
+  {
     path: 'redirect-notification',
-    loadChildren: () => import('./pages/redirect-notification/redirect-notification.module').then( m => m.RedirectNotificationPageModule)
+    loadChildren: () => import('./pages/redirect-notification/redirect-notification.module').then( m => m.RedirectNotificationPageModule),
+    canActivate: [AuthGuard]  // Protege la ruta de notificación de redirección
   },
 
 

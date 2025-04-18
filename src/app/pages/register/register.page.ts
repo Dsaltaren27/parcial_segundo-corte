@@ -1,8 +1,12 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import { User } from 'src/app/core/interfaces/user';
-import { AuthService } from 'src/app/core/services/auth.service';
-
+import { Component } from "@angular/core";
+import { AlertController } from "@ionic/angular";
+import { Router } from "@angular/router";
+import { getAuth, createUserWithEmailAndPassword, User as FirebaseUser } from "firebase/auth";
+import { getFirestore, collection, doc, setDoc } from "firebase/firestore";
+import { initializeApp } from '@angular/fire/app';
+import { environment } from 'src/environments/environment';
+import { NgForm } from "@angular/forms";
+import { User } from "src/app/core/interfaces/user";
 
 @Component({
   selector: 'app-register',
@@ -11,74 +15,78 @@ import { AuthService } from 'src/app/core/services/auth.service';
   standalone: false
 })
 export class RegisterPage {
-  name = '';
-  lastname = '';
-  phone = '';
-  email = '';
-  password = '';
+  
+  // Variables para capturar datos del formulario
+  name!: string;
+  lastname!: string;
+  email!: string;
+  phone!: number;
+  password!: string;
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  // Inicialización de Firebase
+  private app = initializeApp(environment.firebase);
+  private auth = getAuth(this.app);
+  private db = getFirestore(this.app);
 
-  async onRegister() {
-    if (!this.name || !this.lastname || !this.phone || !this.email || !this.password) {
-      this.showToast('Por favor, completa todos los campos.');
+  constructor(private alertController: AlertController, private router: Router) {}
+
+  /**
+   * Método para registrar un nuevo usuario en Firebase Authentication y guardar su información en Firestore.
+   * @param form - Formulario de registro validado
+   */
+  async registerUser(form: NgForm): Promise<void> {
+    if (!form.valid) {
+      console.error("El formulario no es válido.");
       return;
     }
 
-    if (!this.isValidEmail(this.email)) {
-      this.showToast('Por favor, ingresa un correo electrónico válido.');
-      return;
-    }
-
-    if (this.password.length < 6) {
-      this.showToast('La contraseña debe tener al menos 6 caracteres.');
-      return;
-    }
+    const userData: User = {
+      uid: "", // Se asignará después del registro
+      email: this.email,
+      name: this.name,
+      lastname: this.lastname,
+      phone: this.phone
+    };
 
     try {
-      console.log('Registrando usuario con datos:', {
-        name: this.name,
-        lastname: this.lastname,
-        phone: this.phone,
-        email: this.email
-      });
+      // Registro del usuario en Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(this.auth, userData.email, this.password);
+      const firebaseUser: FirebaseUser = userCredential.user;
+      userData.uid = firebaseUser.uid; // Asigna el UID generado por Firebase
 
-      const result: { user: any; userData: User } = await this.authService.register(
-        this.email,
-        this.password,
-        this.name,
-        this.lastname,
-        this.phone
-      );
+      console.log("Usuario registrado en Authentication:", firebaseUser.uid);
 
-      console.log('Resultado del registro:', result);
+      // Guarda los datos adicionales en Firestore
+      const userDocRef = doc(collection(this.db, "users"), firebaseUser.uid);
+      await setDoc(userDocRef, { ...userData });
 
-      if (!result || !result.user) {
-        throw new Error('No se pudo registrar el usuario correctamente.');
-      }
-
-      this.showToast('¡Registro exitoso!');
-      await this.router.navigate(['/login']);
+      console.log("Datos adicionales guardados en Firestore para el usuario:", firebaseUser.uid);
+      
+      // Muestra alerta y redirige al login
+      this.showSuccessMessage();
 
     } catch (error: any) {
-      console.error('Error en el registro:', error);
-      this.showToast('Error en el registro: ' + (error?.message || 'Desconocido'));
+      console.error("Error al registrar el usuario:", error.message);
     }
   }
 
-  private async showToast(message: string) {
-    const toast = document.createElement('ion-toast');
-    toast.message = message;
-    toast.duration = 2000;
-    document.body.appendChild(toast);
-    await toast.present();
-  }
+  /**
+   * Muestra un mensaje de éxito y redirige a la página de login.
+   */
+  async showSuccessMessage() {
+    const alert = await this.alertController.create({
+      header: "Registro Exitoso",
+      message: "El usuario ha sido registrado correctamente.",
+      buttons: [
+        {
+          text: "Aceptar",
+          handler: () => {
+            this.router.navigate(["/login"]); // Redirección al login
+          }
+        }
+      ]
+    });
 
-  private isValidEmail(email: string): boolean {
-    const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-    return emailPattern.test(email);
+    await alert.present();
   }
 }

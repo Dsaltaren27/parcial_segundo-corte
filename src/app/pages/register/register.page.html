@@ -9,8 +9,11 @@
             <ion-card-title>Formulario de Registro</ion-card-title>
           </ion-card-header>
           <ion-card-content>
+
             <h1>1. Datos personales</h1>
-            <form (ngSubmit)="onRegister()" #registerForm="ngForm">
+
+            <form (ngSubmit)="registerUser(registerForm)" #registerForm="ngForm">
+              
               <!-- Nombres -->
               <ion-item>
                 <ion-label position="floating">Nombres:</ion-label>
@@ -43,9 +46,11 @@
 
               <!-- Botón de registro -->
               <div class="button-group ion-margin-top">
-                <ion-button expand="full" type="submit" [disabled]="!registerForm.valid">Registrar</ion-button>
+                <ion-button expand="full" type="submit">Registrar</ion-button>
               </div>
+
             </form>
+
           </ion-card-content>
         </ion-card>
       </ion-col>
