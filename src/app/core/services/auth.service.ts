@@ -6,7 +6,6 @@ import { from, Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { User } from '../interfaces/user';
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -18,13 +17,21 @@ export class AuthService {
     private router: Router
   ) {}
 
-  // Registro de nuevo usuario
+  /**
+   * Registra un nuevo usuario en Firebase Authentication y almacena sus datos en Firestore.
+   * @param email Correo del usuario
+   * @param password Contraseña del usuario
+   * @param name Nombre del usuario
+   * @param lastname Apellido del usuario
+   * @param phone Teléfono del usuario
+   * @returns Objeto con usuario y datos almacenados en Firestore
+   */
   async register(email: string, password: string, name: string, lastname: string, phone: string): Promise<{ user: any; userData: User }> {
     try {
       const userCredential = await this.afAuth.createUserWithEmailAndPassword(email, password);
       const user = userCredential.user;
 
-      if (!user || !user.uid) {
+      if (!user?.uid) {
         throw new Error('No se pudo obtener información del usuario después del registro.');
       }
 
@@ -37,20 +44,24 @@ export class AuthService {
         phone: Number(phone)
       };
 
-
       console.log('UID del usuario:', user.uid);
       await this.firestore.collection('users').doc(user.uid).set(userData);
       console.log('Información guardada exitosamente en Firestore');
 
       return { user, userData };
-
+      
     } catch (error: any) {
       console.error('Error al registrar usuario:', error);
-      const errorMessage = error.message || 'Error desconocido al registrar el usuario.';
-      throw new Error(errorMessage);
+      throw new Error(error.message || 'Error desconocido al registrar el usuario.');
     }
   }
 
+  /**
+   * Inicia sesión con correo y contraseña en Firebase Authentication.
+   * @param email Correo del usuario
+   * @param password Contraseña del usuario
+   * @returns Observable del resultado de autenticación
+   */
   login(email: string, password: string): Observable<any> {
     return from(this.afAuth.signInWithEmailAndPassword(email, password)).pipe(
       catchError((error) => {
@@ -60,6 +71,9 @@ export class AuthService {
     );
   }
 
+  /**
+   * Cierra sesión del usuario y redirige al login.
+   */
   logout(): void {
     this.afAuth.signOut().then(() => {
       this.router.navigate(['/login']);
@@ -68,6 +82,10 @@ export class AuthService {
     });
   }
 
+  /**
+   * Obtiene el estado de autenticación del usuario actual.
+   * @returns Observable del estado de autenticación
+   */
   getUser(): Observable<any> {
     return this.afAuth.authState;
   }

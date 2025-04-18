@@ -1,3 +1,33 @@
-<p>
-  add-contact works!
-</p>
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Agregar Contacto</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form (ngSubmit)="addContact(addContactForm)" #addContactForm="ngForm">
+    
+    <ion-item>
+      <ion-label position="floating">Nombre:</ion-label>
+      <ion-input [(ngModel)]="name" name="name" type="text" required></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Apellido:</ion-label>
+      <ion-input [(ngModel)]="lastname" name="lastname" type="text" required></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Número de teléfono:</ion-label>
+      <ion-input [(ngModel)]="phone" name="phone" type="tel" required pattern="^[0-9]{10}$"></ion-input>
+    </ion-item>
+
+    <div class="button-group ion-margin-top">
+      <ion-button expand="full" type="submit" >Agregar</ion-button>
+    </div>
+
+  </form>
+</ion-content>

@@ -1,4 +1,5 @@
 <ion-app mode="ios">
+  
   <!-- Menú lateral -->
   <ion-menu side="start" menuId="main-menu" contentId="main-content">
     <ion-header>
@@ -26,6 +27,7 @@
 
   <!-- Contenedor principal -->
   <div class="ion-page" id="main-content">
+    
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
@@ -36,33 +38,40 @@
     </ion-header>
 
     <ion-content class="ion-padding">
+      
       <!-- Sección de lista de contactos -->
       <ion-card>
         <ion-card-header>
           <ion-card-title>Lista de Contactos</ion-card-title>
         </ion-card-header>
         <ion-card-content>
+          
           <!-- Mostrar lista de contactos si existe -->
           <ion-list *ngIf="contacts.length > 0; else noContacts">
             <ion-item *ngFor="let contact of contacts">
               <ion-label>
                 <h2>{{ contact.name }}</h2>
+                <h3>{{ contact.lastname }}</h3>
                 <p>{{ contact.phone }}</p>
               </ion-label>
             </ion-item>
           </ion-list>
+
           <!-- Mensaje si no hay contactos -->
           <ng-template #noContacts>
-            <p>No hay contactos guardados.</p>
+            <p class="no-contacts-message">No hay contactos guardados.</p>
           </ng-template>
+
         </ion-card-content>
       </ion-card>
 
-      <!-- Botón para agregar un contacto -->
-      <ion-button expand="full" fill="solid" color="primary">
-        <ion-icon name="person-add" slot="start" aria-label="Agregar contacto"></ion-icon>
-        Agregar contacto
-      </ion-button>
+      <!-- Botón para agregar contacto -->
+      <div class="button-container">
+        <ion-button expand="full" fill="solid" color="primary" (click)="openAddContactModal()">
+          <ion-icon name="person-add" slot="start" aria-label="Agregar contacto"></ion-icon>
+          Agregar contacto
+        </ion-button>
+      </div>
     </ion-content>
   </div>
 </ion-app>

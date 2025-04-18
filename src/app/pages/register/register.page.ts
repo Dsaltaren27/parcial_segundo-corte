@@ -41,7 +41,7 @@ export class RegisterPage {
     }
 
     const userData: User = {
-      uid: "", // Se asignará después del registro
+      uid: "", 
       email: this.email,
       name: this.name,
       lastname: this.lastname,
