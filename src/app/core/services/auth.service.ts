@@ -4,7 +4,8 @@ import { Router } from '@angular/router';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { from, Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { User } from 'src/app/interfaces/user';
+import { User } from '../interfaces/user';
+
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,7 @@ export class AuthService {
     private router: Router
   ) {}
 
-  // 📝 Registro de nuevo usuario
+  // Registro de nuevo usuario
   async register(email: string, password: string, name: string, lastname: string, phone: string): Promise<{ user: any; userData: User }> {
     try {
       const userCredential = await this.afAuth.createUserWithEmailAndPassword(email, password);

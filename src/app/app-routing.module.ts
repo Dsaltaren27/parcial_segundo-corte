@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import { AuthGuard } from './guards/auth.guard';
-import { NoAuthGuard } from './guards/no-auth.guard';
+import { AuthGuard } from './core/guards/auth.guard';
+import { NoAuthGuard } from './core/guards/no-auth.guard';
+
 
 const routes: Routes = [
   {
@@ -27,11 +28,6 @@ const routes: Routes = [
     path: 'register',
     loadChildren: () => import('./pages/register/register.module').then( m => m.RegisterPageModule),
     canActivate: [NoAuthGuard]  
-  },
-  {
-    path: 'add-contact',
-    loadChildren: () => import('./pages/add-contact/add-contact.module').then( m => m.AddContactPageModule),
-    canActivate: [AuthGuard]  // Protege la ruta de agregar contacto
   },
 
 

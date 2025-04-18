@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, MenuController, ModalController } from '@ionic/angular';
-import { AddContactPage } from '../add-contact/add-contact.page';
-import { Contact } from 'src/app/interfaces/contact';
-import { User } from 'src/app/interfaces/user';
-import { AuthService } from 'src/app/shared/services/auth.service';
-import { ContactService } from 'src/app/shared/services/contact.service';
-import firebase from 'firebase/compat/app';
+import { Contact } from 'src/app/core/interfaces/contact';
+import { User } from 'src/app/core/interfaces/user';
+import { AuthService } from 'src/app/core/services/auth.service';
+import { ContactService } from 'src/app/core/services/contact.service';
+
 
 @Component({
   selector: 'app-home',
@@ -29,34 +28,10 @@ export class HomePage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.loadContacts(); // Cargar los contactos al iniciar la página
 
   
   }
-  // Cargar los contactos del usuario actual
-  loadContacts() {
-    this.authService.getUser().subscribe(user => {
-      if (user) {
-        const userId = user.uid;
-        this.contactService.getContacts(userId).subscribe((data) => {
-          this.contacts = data;
-        });
-      }
-    });
-  }
-
-  // Abrir el modal para agregar un contacto
-  async openAddContactModal() {
-    const modal = await this.modalCtrl.create({
-      component: AddContactPage
-    });
-
-    modal.onDidDismiss().then(() => {
-      this.loadContacts(); // Recargar los contactos después de agregar uno nuevo
-    });
-
-    await modal.present();
-  }
+ 
 
 
   // Método para abrir el menú
