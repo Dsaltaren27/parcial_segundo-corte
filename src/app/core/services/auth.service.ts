@@ -123,4 +123,20 @@ export class AuthService {
   getUser(): Observable<any> {
     return this.afAuth.authState;
   }
+
+
+
+  
+  async getCurrentUser() {
+    return new Promise((resolve, reject) => {
+      this.afAuth.authState.subscribe(user => {
+        if (user) {
+          resolve(user);
+        } else {
+          reject('No hay usuario autenticado');
+        }
+      });
+    });
+  }
+
 }

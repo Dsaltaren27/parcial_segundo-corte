@@ -33,7 +33,11 @@ const routes: Routes = [
     path: 'redirect-notification',
     loadChildren: () => import('./pages/redirect-notification/redirect-notification.module').then( m => m.RedirectNotificationPageModule),
     canActivate: [AuthGuard]  // Protege la ruta de notificación de redirección
+  },  {
+    path: 'video-call',
+    loadChildren: () => import('./pages/video-call/video-call.module').then( m => m.VideoCallPageModule)
   },
+
 
 
 

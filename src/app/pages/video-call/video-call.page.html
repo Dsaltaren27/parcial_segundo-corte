@@ -1,0 +1,10 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>video-call</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <button (click)="muteAudio(true)">🔇 Mutear</button>
+  <button (click)="muteAudio(false)">🎤 Activar sonido</button>
+</ion-content>

@@ -4,4 +4,7 @@
     <string name="title_activity_main">Push Notification</string>
     <string name="package_name">com.pushnotification.app</string>
     <string name="custom_url_scheme">com.pushnotification.app</string>
+    
+    <!-- Clave de aplicación de Dropbox -->
+    <string name="dropbox_app_key">TU_APP_KEY</string>
 </resources>
