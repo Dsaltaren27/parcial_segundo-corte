@@ -51,7 +51,11 @@
                 <h3>{{ contact.lastname }}</h3>
                 <p>{{ contact.phone }}</p>
               </ion-label>
+              <ion-button fill="clear" slot="end" >
+                <ion-icon name="call" aria-label="Editar contacto"></ion-icon>
+              </ion-button>
             </ion-item>
+    
           </ion-list>
 
           <ng-template #noContacts>
