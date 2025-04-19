@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
+import { AlertController } from '@ionic/angular';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { BehaviorSubject, from, Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -15,8 +16,10 @@ export class AuthService {
 
   constructor(
     private afAuth: AngularFireAuth,
-    private firestore: AngularFirestore,
-    private router: Router
+    private router: Router,
+    private alertController: AlertController,
+    private firestore: AngularFirestore
+    
   ) {}
 
   /**
@@ -74,12 +77,11 @@ export class AuthService {
   }
 
   private loadInitialUser() {
-    // Aquí iría la lógica para cargar la información del usuario desde donde la tengas almacenada
-    // (por ejemplo, localStorage, una API al iniciar la sesión, etc.)
+
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
       try {
-        this.currentUserSubject.next(JSON.parse(storedUser) as User);
+        this.currentUserSubject.next(JSON.parse(storedUser));
       } catch (error) {
         console.error('Error al parsear el usuario del almacenamiento local', error);
         this.currentUserSubject.next(null);
@@ -94,7 +96,7 @@ export class AuthService {
     } else {
       localStorage.removeItem('currentUser');
     }
-    // Aquí podrías guardar también en una base de datos o donde necesites
+
   }
 
   getLoggedInUserName(): Observable<string | null> {
@@ -108,20 +110,43 @@ export class AuthService {
   /**
    * Cierra sesión del usuario y redirige al login.
    */
-  logout(): void {
-    this.afAuth.signOut().then(() => {
-      this.router.navigate(['/login']);
-    }).catch(error => {
-      console.error('Error al cerrar sesión:', error);
+  async logout(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Confirmación',
+      message: '¿Estás seguro de que deseas cerrar sesión?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Salir',
+          handler: () => {
+            this.afAuth.signOut().then(() => {
+              this.router.navigate(['/login']);
+              this.setCurrentUser(null); 
+              
+
+              
+            }).catch(error => {
+              console.error('Error al cerrar sesión:', error);
+            });
+          }
+        }
+      ]
     });
+
+    await alert.present();
   }
+
+
 
   /**
    * Obtiene el estado de autenticación del usuario actual.
    * @returns Observable del estado de autenticación
    */
-  getUser(): Observable<any> {
-    return this.afAuth.authState;
+  getUser(): Observable<User | null> {
+    return this.afAuth.authState as Observable<User | null>;
   }
 
 
