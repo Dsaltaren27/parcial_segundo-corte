@@ -1,37 +1,55 @@
-import { Injectable } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { Injectable, inject, Inject } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-
-import { from, Observable } from 'rxjs';
-
+import { Observable } from 'rxjs';
+import { Contact } from '../interfaces/contact';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ContactService {
 
+  private contacts: Contact[] = [];
   constructor(
-    private afAuth: AngularFireAuth,
-    private firestore: AngularFirestore
-  ) {}
 
+    @Inject(AngularFirestore) private firestore: AngularFirestore
+  ) {
 
-  addContact(userId: string, contact: any) {
-    return this.firestore
-      .collection('users')
-      .doc(userId)
-      .collection('contacts')
-      .add(contact);
+    this.loadContacts(); // Cargar contactos desde localStorage al iniciar el servicio
   }
 
-  // Función para obtener los contactos del usuario desde su subcolección
-  getContacts(userId: string): Observable<any[]> {
-    return this.firestore
-      .collection('users')
-      .doc(userId)
-      .collection('contacts')
-      .valueChanges({ idField: 'id' });  // Incluye el ID de cada documento
+
+
+
+  loadContacts() {
+    const storedContacts = localStorage.getItem('contacts');
+    this.contacts = storedContacts ? JSON.parse(storedContacts) : [];
   }
+
+  getContacts() {
+    return this.contacts;
+  }
+
+  getContactById(contactId: string) {
+    return this.contacts.find(contact => contact.id === contactId);
+  }
+
+  addContact(contact: any) {
+    this.contacts.push(contact);
+    this.saveContacts();
+  }
+  saveContacts() {
+    localStorage.setItem('contacts', JSON.stringify(this.contacts));
+  }
+
+updateContactList(contactId: string, updatedContact: any) {
+  const index = this.contacts.findIndex(contact => contact.id === contactId);
+  if (index !== -1) {
+    this.contacts[index] = { ...updatedContact, id: contactId };
+    this.saveContacts();
+  }
+}
+
+
 
   // Función para buscar un contacto por teléfono
   getContactsByPhone(userId: string, phone: string): Promise<boolean> {
@@ -53,4 +71,3 @@ export class ContactService {
     });
   }
 }
-

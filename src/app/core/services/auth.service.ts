@@ -2,14 +2,16 @@ import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { from, Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { BehaviorSubject, from, Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { User } from '../interfaces/user';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(
     private afAuth: AngularFireAuth,
@@ -70,6 +72,38 @@ export class AuthService {
       })
     );
   }
+
+  private loadInitialUser() {
+    // Aquí iría la lógica para cargar la información del usuario desde donde la tengas almacenada
+    // (por ejemplo, localStorage, una API al iniciar la sesión, etc.)
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      try {
+        this.currentUserSubject.next(JSON.parse(storedUser) as User);
+      } catch (error) {
+        console.error('Error al parsear el usuario del almacenamiento local', error);
+        this.currentUserSubject.next(null);
+      }
+    }
+  }
+
+  setCurrentUser(user: User | null) {
+    this.currentUserSubject.next(user);
+    if (user) {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('currentUser');
+    }
+    // Aquí podrías guardar también en una base de datos o donde necesites
+  }
+
+  getLoggedInUserName(): Observable<string | null> {
+    return this.currentUser$.pipe(map(user => user?.name || null));
+  }
+
+
+
+
 
   /**
    * Cierra sesión del usuario y redirige al login.

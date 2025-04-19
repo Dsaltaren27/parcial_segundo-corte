@@ -1,4 +1,4 @@
-import { inject, Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
@@ -7,15 +7,13 @@ import { PushNotifications } from '@capacitor/push-notifications';
   providedIn: 'root'
 })
 export class FcmService {
-  router=inject(Router);
+  constructor(private router: Router) { } // <-- Inyecta Router en el constructor
 
-  constructor() { }
   initpush() {
     if(Capacitor.isNativePlatform()){
     this.registerPush();
     }
   }
-
 
   private registerPush() {
     PushNotifications.requestPermissions().then( async (permissions) => {
@@ -24,7 +22,6 @@ export class FcmService {
       } else {
         console.error('Permission not granted for push notifications');
       }
-
     });
 
     PushNotifications.addListener('registration', async token => {
@@ -37,11 +34,9 @@ export class FcmService {
 
     PushNotifications.addListener('pushNotificationActionPerformed', async (notification) => {
       console.log('Push action performed: ' + JSON.stringify(notification));
-      // Aquí puedes manejar la acción de la notificación, como redirigir a una página específica
       const data = notification.notification;
       console.log('Data: ', data);
-      // Aquí puedes redirigir a la página deseada usando el router de Angular
-      this.router.navigate(['/redirect-notification']);
+      this.router.navigate(['/redirect-notification']); // Usa la instancia inyectada
     });
   }
 }

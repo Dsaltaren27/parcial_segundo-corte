@@ -24,7 +24,7 @@ import { AddContactComponent } from './components/add-contact/add-contact.compon
     FormsModule // ✅ Agregado aquí
   ],
   providers: [
-    AuthService
+
   ]
 })
 export class SharedModule {}
