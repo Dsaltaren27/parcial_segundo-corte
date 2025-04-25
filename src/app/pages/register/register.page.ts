@@ -52,8 +52,7 @@ export class RegisterPage {
       // Registro del usuario en Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(this.auth, userData.email, this.password);
       const firebaseUser: FirebaseUser = userCredential.user;
-      userData.uid = firebaseUser.uid; // Asigna el UID generado por Firebase
-
+      userData.uid = firebaseUser.uid; 
       console.log("Usuario registrado en Authentication:", firebaseUser.uid);
 
       // Guarda los datos adicionales en Firestore

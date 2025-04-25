@@ -18,7 +18,7 @@ export class AppComponent {
   initializeApp() {
     this.platform.ready().then(() => {  
     
-      this.fcmservice.initpush(); // Inicializa el servicio de FCM
+      this.fcmservice.initPush(); // Inicializa el servicio de FCM
 });
 
 }

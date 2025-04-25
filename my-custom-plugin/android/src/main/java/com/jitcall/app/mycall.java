@@ -24,14 +24,11 @@ public class mycall extends FirebaseMessagingService {
     if (remoteMessage.getNotification() != null) {
       String title = remoteMessage.getNotification().getTitle();
       String body = remoteMessage.getNotification().getBody();
-      showCallNotification(title, body);
+      showCallNotification(getApplicationContext(), title, body);
     }
   }
 
-
-  private void showCallNotification(String title, String body) {
-    Context context = null;
-    context = context.getApplicationContext();
+  private void showCallNotification(Context context, String title, String body) {
     NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
     String channelId = "call_notification_channel";
 
@@ -42,19 +39,33 @@ public class mycall extends FirebaseMessagingService {
         NotificationManager.IMPORTANCE_HIGH
       );
       channel.setDescription("Notifications for incoming calls");
-      channel.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE),
-        new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE).build());
+      channel.setSound(
+        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE),
+        new AudioAttributes.Builder()
+          .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+          .build()
+      );
       channel.enableVibration(true);
       notificationManager.createNotificationChannel(channel);
     }
 
     Intent acceptIntent = new Intent(context, NotificationActionReceiver.class);
     acceptIntent.setAction("CALL_ACCEPT");
-    PendingIntent acceptPendingIntent = PendingIntent.getBroadcast(context, 0, acceptIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    PendingIntent acceptPendingIntent = PendingIntent.getBroadcast(
+      context,
+      0,
+      acceptIntent,
+      PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+    );
 
     Intent rejectIntent = new Intent(context, NotificationActionReceiver.class);
     rejectIntent.setAction("CALL_REJECT");
-    PendingIntent rejectPendingIntent = PendingIntent.getBroadcast(context, 1, rejectIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    PendingIntent rejectPendingIntent = PendingIntent.getBroadcast(
+      context,
+      1,
+      rejectIntent,
+      PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+    );
 
     NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
       .setSmallIcon(android.R.drawable.ic_dialog_info)

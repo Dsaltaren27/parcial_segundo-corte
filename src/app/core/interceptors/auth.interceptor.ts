@@ -1,36 +1,28 @@
+// src/app/interceptors/api-auth.interceptor.ts
 import { Injectable } from '@angular/core';
-import {
-  HttpInterceptor,
-  HttpRequest,
-  HttpHandler,
-  HttpEvent
-} from '@angular/common/http';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
 import { Observable, from } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { ApiService } from '../services/api.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-
-  constructor(private afAuth: AngularFireAuth) {}
+  constructor(private apiService: ApiService) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    return from(this.afAuth.currentUser).pipe(
-      switchMap(user => {
-        if (user) {
-          return from(user.getIdToken()).pipe(
-            switchMap(token => {
-              const clonedReq = req.clone({
-                setHeaders: {
-                  Authorization: `Bearer ${token}`
-                }
-              });
-              return next.handle(clonedReq);
-            })
-          );
-        } else {
-          return next.handle(req);
+    if (!req.url.includes('ravishing-courtesy')) return next.handle(req);
+
+    return from(this.apiService.getToken()).pipe(
+      switchMap(token => {
+        if (token) {
+          const cloned = req.clone({
+            setHeaders: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          return next.handle(cloned);
         }
+        return next.handle(req);
       })
     );
   }

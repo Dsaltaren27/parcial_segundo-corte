@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.jitcall.app"
-    compileSdk 33 // Se establece explícitamente el nivel de SDK
+  namespace "com.jitcall.app"
+  compileSdk 35
 
     defaultConfig {
         applicationId "com.jitcall.app"
-        minSdkVersion 23
+        minSdkVersion 26
         targetSdkVersion 33
         versionCode 1
         versionName "1.0"
@@ -45,6 +45,7 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
     implementation "androidx.core:core-splashscreen:1.0.0"
     implementation project(':capacitor-android')
+    implementation 'com.google.firebase:firebase-messaging:23.4.0'
 
     // Test dependencies
     testImplementation "junit:junit:4.13.2"

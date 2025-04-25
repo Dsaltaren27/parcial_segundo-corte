@@ -4,13 +4,14 @@
   <ion-grid>
     <ion-row class="ion-justify-content-center">
       <ion-col size="12" size-md="8" size-lg="6">
+        <form (ngSubmit)="onLogin()">
         <ion-card>
           <ion-card-header>
             <ion-card-title>Inicio de Sesión</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             
-            <form (ngSubmit)="onLogin()">
+            
               <ion-item class="form-group">
                 <ion-label position="floating">CORREO:</ion-label>
                 <ion-input [(ngModel)]="email" name="email" type="email" required></ion-input>
@@ -18,16 +19,17 @@
 
               <ion-item class="form-group">
                 <ion-label position="floating">CONTRASEÑA:</ion-label>
-                <ion-input [(ngModel)]="password" name="password" type="password" required></ion-input>
+                <ion-input [(ngModel)]="password" label="CONTRASEÑA" name="password" type="password" required></ion-input>
               </ion-item>
 
               <div class="button-group ion-margin-top">
                 <ion-button type="submit" expand="block">Login</ion-button>
                 <ion-button expand="block" type="button" routerLink="/register">Register</ion-button>
               </div>
-            </form>
+            
           </ion-card-content>
         </ion-card>
+        </form>
       </ion-col>
     </ion-row>
   </ion-grid>
