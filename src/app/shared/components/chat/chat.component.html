@@ -1,81 +1,77 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
-      <ion-title>{{ otherUserPhone || 'Chat' }}</ion-title>
+    <ion-title>
+      <div *ngIf="otherUserName">
+        {{ otherUserName }}
+        <ion-note *ngIf="otherUserPhone" class="ion-text-nowrap" style="display: block;">
+          {{ otherUserPhone }}
+        </ion-note>
+      </div>
+      <div *ngIf="!otherUserName">Cargando Chat...</div>
+    </ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="handleCall()">
-        <ion-icon name="call-outline"></ion-icon>
+      <ion-button (click)="startJitsiCall()" [disabled]="!isAuthReady || !otherUserId">
+        <ion-icon slot="icon-only" name="call"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-
-  <div *ngIf="loading" class="ion-text-center ion-padding">
-    <ion-spinner name="crescent"></ion-spinner>
+  <div *ngIf="loading" class="ion-text-center ion-padding-top">
+    <ion-spinner></ion-spinner>
     <p>Cargando mensajes...</p>
   </div>
 
-  <div *ngIf="error" class="ion-text-center ion-padding error-message">
-    <ion-icon name="alert-circle-outline"></ion-icon>
-    <p>{{ error }}</p>
+  <div *ngIf="error" class="ion-text-center ion-padding-top">
+    <ion-text color="danger">
+      <p>{{ error }}</p>
+    </ion-text>
   </div>
 
-  <div class="messages-container">
-    <div *ngFor="let message of messages"
-         [class.message-bubble]="true"
-         [class.sent]="message.senderId === userId"
-         [class.received]="message.senderId !== userId">
-      <div class="message-content">
-        <div class="message-text">{{ message.text }}</div>
-        <div class="message-info">
-          {{ message.timestamp?.toDate() | date:'shortTime' }}
-        </div>
+  <ion-list *ngIf="!loading && !error && messages.length > 0">
+    <ion-item *ngFor="let message of messages" [class.ion-text-right]="message.senderId === currentUserUID"
+      lines="none">
+      <div class="message-bubble" [class.my-message]="message.senderId === currentUserUID"
+        [class.other-message]="message.senderId !== currentUserUID">
+        <p class="message-text">{{ message.text }}</p>
+        <ion-note class="message-time">{{ message.timestamp?.toDate() | date:'shortTime' }}</ion-note>
       </div>
-    </div>
+    </ion-item>
     <div #messagesEnd></div>
+  </ion-list>
+
+  <div *ngIf="!loading && !error && messages.length === 0" class="ion-text-center ion-padding-top">
+    <p>No hay mensajes en este chat. ¡Envía el primero!</p>
   </div>
 
 </ion-content>
 
 <ion-footer>
   <ion-toolbar>
-    <ion-grid class="ion-no-padding">
-      <ion-row class="ion-align-items-center">
-        <ion-col class="ion-no-padding">
-          <ion-textarea
-            placeholder="Escribe un mensaje..."
-            rows="1"
-            auto-grow="true"
-            [(ngModel)]="newMessage"
-            (keyup.enter)="handleSendMessage()"
-            class="message-input"
-          ></ion-textarea>
-        </ion-col>
-        <ion-col size="auto" class="ion-no-padding">
-          <ion-button expand="block" (click)="handleSendMessage()" [disabled]="!newMessage.trim()">
-            <ion-icon name="send"></ion-icon>
-          </ion-button>
-        </ion-col>
-        <ion-col size="auto" class="ion-no-padding">
-          <ion-button expand="block" [disabled]="!newMessage.trim()">
-            <ion-icon name="image"></ion-icon>
-          </ion-button>
-        </ion-col>
-        <ion-col size="auto" class="ion-no-padding">
-          <ion-button expand="block"[disabled]="!newMessage.trim()">
-            <ion-icon name="attach"></ion-icon>
-          </ion-button>
-        </ion-col>
-        <ion-col size="auto" class="ion-no-padding">
-          <ion-button expand="block" [disabled]="!newMessage.trim()">
-            <ion-icon name="location"></ion-icon>
-          </ion-button>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+    <ion-item lines="none" class="message-input-wrapper">
+      <ion-input [(ngModel)]="newMessageText" placeholder="Escribe un mensaje..." (keyup.enter)="sendMessage()"
+        [disabled]="!isAuthReady || !chatId"></ion-input>
+      <ion-buttons slot="end">
+        <ion-button (click)="sendMessage()" [disabled]="!newMessageText.trim() || !isAuthReady || !chatId">
+          <ion-icon slot="icon-only" name="send"></ion-icon>
+        </ion-button>
+        
+        <ion-button>
+          <ion-icon name="mic" slot="icon-only"></ion-icon>
+        </ion-button>
+
+        <ion-button>
+          <ion-icon name="document-attach" slot="icon-only"></ion-icon>
+        </ion-button>
+
+        <ion-button>
+          <ion-icon name="location" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-item>
   </ion-toolbar>
 </ion-footer>

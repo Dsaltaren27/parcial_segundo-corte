@@ -3,13 +3,6 @@
     <ion-header>
       <ion-toolbar>
         <ion-title>Menú</ion-title>
-        <!-- Esta lista de contactos en el menú lateral es redundante con la lista principal.
-             Se recomienda eliminarla o usarla para otro propósito. Por ahora, la comento. -->
-        <!-- <ion-list>
-          <ion-item *ngFor="let contact of contacts">
-            <h1>{{ contact.name }}</h1>
-          </ion-item>
-        </ion-list> -->
       </ion-toolbar>
     </ion-header>
     <ion-content>
@@ -50,9 +43,9 @@
           <ion-card-title>Lista de Contactos</ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <div *ngIf="currentUserId" class="text-sm text-gray-600 dark:text-gray-300 mb-4 text-center">
+          <!-- <div *ngIf="currentUserId" class="text-sm text-gray-600 dark:text-gray-300 mb-4 text-center">
             Tu ID de Usuario: <span class="font-mono text-xs text-indigo-700 dark:text-indigo-400">{{ currentUserId }}</span>
-          </div>
+          </div> -->
 
           <div *ngIf="loadingContacts" class="flex items-center justify-center py-4">
             <ion-spinner name="crescent"></ion-spinner>
@@ -87,6 +80,8 @@
           Agregar contacto
         </ion-button>
       </div>
+
+
     </ion-content>
   </div>
 </ion-app>

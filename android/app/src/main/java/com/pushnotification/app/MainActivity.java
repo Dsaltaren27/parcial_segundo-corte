@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
                 .setServerURL(serverURL)
                 .setFeatureFlag("welcomepage.enabled", false)
                 .setConfigOverride("requireDisplayName", true)
-                .setConfigOverride("customToolbarButtons", customToolbarButtons)
+                .setConfigOverride("customToolbarButtons", String.valueOf(customToolbarButtons))
                 .build();
 
             JitsiMeet.setDefaultConferenceOptions(defaultOptions);

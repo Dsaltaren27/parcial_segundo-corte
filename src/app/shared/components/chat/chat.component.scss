@@ -1,0 +1,103 @@
+/* src/app/pages/chat/chat.component.scss */
+
+ion-content {
+  --background: var(--ion-color-light);
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+ion-list {
+  padding: 0;
+  margin: 0;
+  background: transparent;
+}
+
+ion-item {
+  --background: transparent;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  padding-bottom: 8px;
+  padding-top: 0;
+
+  &.ion-text-right {
+    justify-content: flex-end;
+  }
+}
+
+.message-bubble {
+  padding: 10px 14px;
+  border-radius: 20px;
+  max-width: 80%;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  position: relative;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.my-message {
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  margin-left: auto;
+  border-bottom-right-radius: 5px;
+}
+
+.other-message {
+  background: var(--ion-color-light-shade);
+  color: var(--ion-color-dark-shade);
+  margin-right: auto;
+  border-bottom-left-radius: 5px;
+}
+
+.message-text {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.message-time {
+  display: block;
+  font-size: 0.7em;
+  text-align: right;
+  margin-top: 4px;
+  opacity: 0.8;
+
+  .my-message & {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .other-message & {
+    color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+ion-footer {
+  ion-toolbar {
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: 0;
+    --padding-bottom: 0;
+  }
+}
+
+.message-input-wrapper {
+  --inner-padding-end: 0;
+  --inner-padding-start: 0;
+  width: 100%;
+  padding-left: 16px;
+
+  ion-input {
+    --padding-start: 0;
+    --padding-end: 8px;
+    flex-grow: 1;
+  }
+
+  ion-buttons {
+    margin-inline-end: 8px;
+  }
+}
+
+ion-spinner {
+  --color: var(--ion-color-primary);
+}

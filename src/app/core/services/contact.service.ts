@@ -1,127 +1,93 @@
+// En src/app/core/services/contact.service.ts
 import { Injectable } from '@angular/core';
-// CAMBIO: Importar desde @angular/fire/firestore (Modular SDK)
-import { Firestore, collection, doc, setDoc, query, where, getDocs, collectionData, addDoc } from '@angular/fire/firestore';
-import { Observable, of } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
-import { Contact } from '../interfaces/contact'; // Asegúrate de que tu interfaz Contact esté definida aquí
-import { User } from '../interfaces/user';     // Asegúrate de que tu interfaz User esté definida aquí
-import { AuthService } from './auth.service';   // Importa tu AuthService
+import { Firestore, doc, getDoc, collection, query, where, getDocs, collectionData, deleteDoc, setDoc } from '@angular/fire/firestore'; // Asegúrate de tener setDoc también
+import { Observable, from } from 'rxjs';
+import { map, take } from 'rxjs/operators';
+import { User } from '../interfaces/user';
+import { Contact } from '../interfaces/contact';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ContactService {
 
-  constructor(
-    private firestore: Firestore, // CAMBIO: Inyectar 'Firestore' (Modular SDK)
-    private authService: AuthService
-  ) {}
+  constructor(private firestore: Firestore) {}
 
-  /**
-   * Obtiene la lista de contactos específicos del usuario autenticado desde Firestore.
-   * Emite un Observable que se actualiza en tiempo real.
-   * @returns Observable<Contact[]>
-   */
-  getContacts(): Observable<Contact[]> {
-    return this.authService.getCurrentUserId().pipe(
-      switchMap(userId => {
-        if (!userId) {
-          console.warn('ContactService: No hay usuario autenticado, devolviendo contactos vacíos.');
-          return of([]);
+  getUserPhoneNumber(uid: string): Observable<{ phone: string | null, name: string | null } | null> {
+    const userDocRef = doc(this.firestore, 'users', uid);
+    return from(getDoc(userDocRef)).pipe(
+      map(snapshot => {
+        if (snapshot.exists()) {
+          const userData = snapshot.data() as User;
+          const fullName = userData.name ? (userData.lastname ? `${userData.name} ${userData.lastname}` : userData.name) : null;
+          return {
+            phone: userData.phone ? String(userData.phone) : null,
+            name: fullName
+          };
+        } else {
+          console.warn(`No se encontraron datos de usuario en Firestore para el UID: ${uid}`);
+          return null;
         }
-        // Usar funciones modulares para Firestore
-        const contactsCollectionRef = collection(this.firestore, `users/${userId}/contacts`);
-        // collectionData mapea el ID del documento al campo 'id' por defecto
-        return collectionData(contactsCollectionRef, { idField: 'id' }).pipe(
-          map(contacts => contacts as Contact[])
-        );
-      })
+      }),
+      take(1)
     );
   }
 
-  /**
-   * Obtiene la lista de todos los usuarios registrados en la aplicación.
-   * Excluye al usuario actualmente autenticado de la lista.
-   * @returns Observable<User[]>
-   */
-  getAllAppUsers(): Observable<User[]> {
-    return this.authService.getCurrentUserId().pipe(
-      switchMap(currentUserId => {
-        // Usar funciones modulares para Firestore
-        const usersCollectionRef = collection(this.firestore, 'users');
-        return collectionData(usersCollectionRef, { idField: 'uid' }).pipe(
-          map(users => {
-            // Filtramos para excluir al usuario actual de la lista
-            return users.filter(user => user.uid !== currentUserId) as User[];
-          })
-        );
-      })
-    );
-  }
-
-  /**
-   * Añade un nuevo contacto a la colección de contactos del usuario autenticado en Firestore.
-   * @param newContact Los datos del nuevo contacto.
-   * @param currentUserId El UID del usuario actualmente autenticado.
-   * @returns Promise<void>
-   */
-  async addContactToFirestore(newContact: Partial<Contact>, currentUserId: string): Promise<void> {
+  // ESTE ES EL MÉTODO GETCONTACTS QUE DEBE EXISTIR
+  getContacts(currentUserId: string): Observable<Contact[]> {
     if (!currentUserId) {
-      throw new Error('No se puede añadir contacto: Usuario no autenticado.');
+      console.error('getContacts: currentUserId es nulo o vacío.');
+      return new Observable<Contact[]>(observer => observer.next([]));
     }
-    // Usar funciones modulares para Firestore
-    const contactsCollectionRef = collection(this.firestore, `users/${currentUserId}/contacts`);
-    // addDoc para añadir un documento con un ID generado automáticamente
-    return addDoc(contactsCollectionRef, newContact).then(() => { // CAMBIO: addDoc en lugar de .add
-      console.log('Contacto añadido a Firestore correctamente');
-    }).catch(error => {
-      console.error('Error al añadir contacto a Firestore:', error);
-      throw error;
-    });
-  }
-
-  /**
-   * Busca un usuario por su número de teléfono en la colección global 'users'.
-   * Se utiliza para encontrar el 'otherUserId' de un contacto.
-   * @param phone El número de teléfono a buscar.
-   * @returns Observable<User[]> Un observable que emite un array de usuarios que coinciden.
-   */
-  findUserByPhone(phone: string): Observable<User[]> {
-    // Usar funciones modulares para Firestore
-    const usersCollectionRef = collection(this.firestore, 'users');
-    const q = query(usersCollectionRef, where('phone', '==', Number(phone)));
-    return collectionData(q, { idField: 'uid' }).pipe(
-      map(users => users as User[])
+    const contactsCollection = collection(this.firestore, `users/${currentUserId}/contacts`);
+    return collectionData(contactsCollection, { idField: 'id' }).pipe(
+      map(contacts => contacts as Contact[])
     );
   }
 
-  // Este método ya no es usado por add-contact-component directamente, pero lo mantengo
-  // por si lo usas en otro lugar o como referencia.
-  getContactExistsInSubcollection(userId: string, phone: string): Promise<boolean> {
-    // Usar funciones modulares para Firestore
-    const contactsCollectionRef = collection(this.firestore, `users/${userId}/contacts`);
-    const q = query(contactsCollectionRef, where('phone', '==', Number(phone)));
-    // getDocs devuelve una Promise
-    return getDocs(q).then(querySnapshot => { // CAMBIO: getDocs en lugar de .get().subscribe
-      return !querySnapshot.empty;
-    });
+  async findUserByPhoneNumber(phoneNumber: string): Promise<User | null> {
+    const usersRef = collection(this.firestore, 'users');
+    const q = query(usersRef, where('phone', '==', phoneNumber));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const userData = querySnapshot.docs[0].data() as User;
+      return { uid: querySnapshot.docs[0].id, ...userData };
+    }
+    return null;
   }
 
-  // Métodos de localStorage (mantener si son necesarios para otra funcionalidad)
-  private contactsLocal: Contact[] = [];
-  loadContactsLocal() {
-    const storedContacts = localStorage.getItem('contacts');
-    this.contactsLocal = storedContacts ? JSON.parse(storedContacts) : [];
+  async addContact(currentUserId: string, contactUser: User): Promise<void> {
+    if (!currentUserId || !contactUser || !contactUser.uid) {
+      console.error('addContact: Faltan datos necesarios.');
+      throw new Error('Datos de usuario o contacto incompletos.');
+    }
+
+    const contactDocRef = doc(this.firestore, `users/${currentUserId}/contacts`, contactUser.uid);
+    try {
+      await setDoc(contactDocRef, {
+        id: contactUser.uid,
+        name: contactUser.name || 'Sin nombre',
+        lastname: contactUser.lastname || '',
+        phone: contactUser.phone || '',
+        email: contactUser.email || '',
+        addedAt: new Date(),
+      });
+      console.log(`Contacto ${contactUser.uid} añadido para el usuario ${currentUserId}`);
+    } catch (error) {
+      console.error('Error al añadir contacto:', error);
+      throw error;
+    }
   }
-  getContactsLocal() { return this.contactsLocal; }
-  getContactByIdLocal(contactId: string) { return this.contactsLocal.find(contact => contact.id === contactId); }
-  addContactLocal(contact: any) { this.contactsLocal.push(contact); this.saveContactsLocal(); }
-  saveContactsLocal() { localStorage.setItem('contacts', JSON.stringify(this.contactsLocal)); }
-  updateContactListLocal(contactId: string, updatedContact: any) {
-    const index = this.contactsLocal.findIndex(contact => contact.id === contactId);
-    if (index !== -1) {
-      this.contactsLocal[index] = { ...updatedContact, id: contactId };
-      this.saveContactsLocal();
+
+  async deleteContact(currentUserId: string, contactIdToDelete: string): Promise<void> {
+    const contactDocRef = doc(this.firestore, `users/${currentUserId}/contacts`, contactIdToDelete);
+    try {
+      await deleteDoc(contactDocRef);
+      console.log(`Contacto ${contactIdToDelete} eliminado para el usuario ${currentUserId}`);
+    } catch (error) {
+      console.error('Error al eliminar contacto:', error);
+      throw error;
     }
   }
 }

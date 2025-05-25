@@ -10,45 +10,83 @@
           </ion-card-header>
           <ion-card-content>
 
-            <h1>1. Datos personales</h1>
+            <h2 class="ion-margin-bottom">1. Datos personales</h2>
 
             <form (ngSubmit)="registerUser(registerForm)" #registerForm="ngForm">
-              
+
               <!-- Nombres -->
               <ion-item>
-                <ion-label position="floating">Nombres:</ion-label>
-                <ion-input [(ngModel)]="name" name="name" type="text" required></ion-input>
+                <ion-label position="floating">Nombres</ion-label>
+                <ion-input
+                  name="name"
+                  [(ngModel)]="name"
+                  required
+                  type="text"
+                  autocomplete="given-name">
+                </ion-input>
               </ion-item>
 
               <!-- Apellidos -->
               <ion-item>
-                <ion-label position="floating">Apellidos:</ion-label>
-                <ion-input [(ngModel)]="lastname" name="lastname" type="text" required></ion-input>
+                <ion-label position="floating">Apellidos</ion-label>
+                <ion-input
+                  name="lastname"
+                  [(ngModel)]="lastname"
+                  required
+                  type="text"
+                  autocomplete="family-name">
+                </ion-input>
               </ion-item>
 
               <!-- Correo electrónico -->
               <ion-item>
-                <ion-label position="floating">Correo electrónico:</ion-label>
-                <ion-input [(ngModel)]="email" name="email" type="email" required email></ion-input>
+                <ion-label position="floating">Correo electrónico</ion-label>
+                <ion-input
+                  name="email"
+                  [(ngModel)]="email"
+                  required
+                  type="email"
+                  autocomplete="email"
+                  inputmode="email">
+                </ion-input>
               </ion-item>
 
-              <!-- Número de teléfono -->
+              <!-- Teléfono -->
               <ion-item>
-                <ion-label position="floating">Número de teléfono:</ion-label>
-                <ion-input [(ngModel)]="phone" name="phone" type="tel" required pattern="^[0-9]{10}$"></ion-input>
+                <ion-label position="floating">Número de teléfono</ion-label>
+                <ion-input
+                  name="phone"
+                  [(ngModel)]="phone"
+                  required
+                  type="tel"
+                  autocomplete="tel"
+                  inputmode="numeric"
+                  pattern="^[0-9]{10}$">
+                </ion-input>
               </ion-item>
 
               <!-- Contraseña -->
               <ion-item>
-                <ion-label position="floating">Contraseña:</ion-label>
-                <ion-input [(ngModel)]="password" name="password" type="password" required minlength="6"></ion-input>
+                <ion-label position="floating">Contraseña</ion-label>
+                <ion-input
+                  name="password"
+                  [(ngModel)]="password"
+                  required
+                  type="password"
+                  minlength="6"
+                  autocomplete="new-password">
+                </ion-input>
               </ion-item>
 
-              <!-- Botón de registro -->
-              <div class="button-group ion-margin-top">
-                <ion-button expand="full" type="submit">Registrar</ion-button>
+              <!-- Botón de registrar -->
+              <div class="ion-margin-top">
+                <ion-button
+                  expand="block"
+                  type="submit"
+                  [disabled]="!registerForm.form.valid ">
+                  Registrar
+                </ion-button>
               </div>
-
             </form>
 
           </ion-card-content>

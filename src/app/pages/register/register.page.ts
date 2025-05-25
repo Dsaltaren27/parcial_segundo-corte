@@ -1,12 +1,9 @@
 import { Component } from "@angular/core";
 import { AlertController } from "@ionic/angular";
 import { Router } from "@angular/router";
-import { getAuth, createUserWithEmailAndPassword, User as FirebaseUser } from "firebase/auth";
-import { getFirestore, collection, doc, setDoc } from "firebase/firestore";
-import { initializeApp } from '@angular/fire/app';
-import { environment } from 'src/environments/environment';
 import { NgForm } from "@angular/forms";
-import { User } from "src/app/core/interfaces/user";
+
+import { AuthService } from "src/app/core/services/auth.service";
 
 @Component({
   selector: 'app-register',
@@ -15,63 +12,61 @@ import { User } from "src/app/core/interfaces/user";
   standalone: false
 })
 export class RegisterPage {
-  
-  // Variables para capturar datos del formulario
+
   name!: string;
   lastname!: string;
   email!: string;
-  phone!: number;
+  phone!: string;
   password!: string;
 
-  // Inicialización de Firebase
-  private app = initializeApp(environment.firebase);
-  private auth = getAuth(this.app);
-  private db = getFirestore(this.app);
+  constructor(
+    private alertController: AlertController,
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
-  constructor(private alertController: AlertController, private router: Router) {}
-
-  /**
-   * Método para registrar un nuevo usuario en Firebase Authentication y guardar su información en Firestore.
-   * @param form - Formulario de registro validado
-   */
   async registerUser(form: NgForm): Promise<void> {
     if (!form.valid) {
       console.error("El formulario no es válido.");
       return;
     }
 
-    const userData: User = {
-      uid: "", 
-      email: this.email,
-      name: this.name,
-      lastname: this.lastname,
-      phone: this.phone
-    };
-
     try {
-      // Registro del usuario en Firebase Authentication
-      const userCredential = await createUserWithEmailAndPassword(this.auth, userData.email, this.password);
-      const firebaseUser: FirebaseUser = userCredential.user;
-      userData.uid = firebaseUser.uid; 
-      console.log("Usuario registrado en Authentication:", firebaseUser.uid);
+      await this.authService.register(
+        this.email,
+        this.password,
+        this.name,
+        this.lastname,
+        this.phone
+      );
 
-      // Guarda los datos adicionales en Firestore
-      const userDocRef = doc(collection(this.db, "users"), firebaseUser.uid);
-      await setDoc(userDocRef, { ...userData });
+      console.log("Usuario registrado y datos guardados usando AuthService.");
 
-      console.log("Datos adicionales guardados en Firestore para el usuario:", firebaseUser.uid);
-      
-      // Muestra alerta y redirige al login
       this.showSuccessMessage();
 
     } catch (error: any) {
       console.error("Error al registrar el usuario:", error.message);
+      let errorMessage = "Ocurrió un error al registrar el usuario. Por favor, inténtalo de nuevo.";
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = 'El correo electrónico ya está en uso por otra cuenta.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'El formato del correo electrónico no es válido.';
+            break;
+          case 'auth/weak-password':
+            errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
+            break;
+          default:
+            errorMessage = `Error de Firebase: ${error.message}`;
+            break;
+        }
+      }
+      this.showErrorMessage(errorMessage);
     }
   }
 
-  /**
-   * Muestra un mensaje de éxito y redirige a la página de login.
-   */
   async showSuccessMessage() {
     const alert = await this.alertController.create({
       header: "Registro Exitoso",
@@ -80,12 +75,20 @@ export class RegisterPage {
         {
           text: "Aceptar",
           handler: () => {
-            this.router.navigate(["/login"]); // Redirección al login
+            this.router.navigate(["/login"]);
           }
         }
       ]
     });
+    await alert.present();
+  }
 
+  async showErrorMessage(message: string) {
+    const alert = await this.alertController.create({
+      header: "Error de Registro",
+      message: message,
+      buttons: ["Aceptar"]
+    });
     await alert.present();
   }
 }

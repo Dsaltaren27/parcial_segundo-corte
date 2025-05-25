@@ -28,11 +28,9 @@ export class LoginPage {
     this.isLoading = true;
 
     try {
-      const userCredential = await firstValueFrom(
-        this.authService.login(this.email, this.password)
-      );
+      const userCredential = await this.authService.login(this.email, this.password);
 
-      if (userCredential && userCredential.user) {
+      if (userCredential) {
         await this.showToast('¡Bienvenido!');
         this.router.navigateByUrl('/home');
       } else {

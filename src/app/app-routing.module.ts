@@ -36,10 +36,6 @@ const routes: Routes = [
     canActivate: [AuthGuard]  // Protege la ruta de notificación de redirección
   },
   {
-    path: 'video-call',
-    loadChildren: () => import('./pages/video-call/video-call.module').then( m => m.VideoCallPageModule)
-  },
-  {
     path: 'chat/:otherUserId',
     component:ChatComponent
   }

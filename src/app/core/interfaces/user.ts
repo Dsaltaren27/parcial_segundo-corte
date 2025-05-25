@@ -5,4 +5,7 @@ export interface User {
     lastname: string;
     phone: number;
     uid?: string;
+    fcmToken?: string;
+     createdAt?: Date;
+     updatedAt?: Date;
 }

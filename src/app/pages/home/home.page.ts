@@ -2,23 +2,21 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController, MenuController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { User as FirebaseUser } from '@angular/fire/auth';
+
 import { Contact } from 'src/app/core/interfaces/contact';
 import { ContactService } from 'src/app/core/services/contact.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { AddContactComponent } from 'src/app/shared/components/add-contact/add-contact.component';
 
 
-// Importa los iconos de Lucide Angular si los usas en tu HTML
-// import { Plus, User, LogOut, Settings, HelpCircle, MessageSquare } from 'lucide-angular';
-
-
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
-  standalone: false, // Asegúrate de que sea standalone: true
-
+  standalone: false
 })
 export class HomePage implements OnInit, OnDestroy {
   public contacts: Contact[] = [];
@@ -26,7 +24,7 @@ export class HomePage implements OnInit, OnDestroy {
   public loadingContacts: boolean = true;
 
   private authSubscription!: Subscription;
-  private contactsSubscription!: Subscription; // ¡MUY IMPORTANTE!
+  private contactsSubscription!: Subscription;
 
   constructor(
     private router: Router,
@@ -37,21 +35,27 @@ export class HomePage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.authSubscription = this.authService.getCurrentUserId().subscribe(userId => {
+    this.authSubscription = this.authService.getFirebaseUser().pipe(
+      map((user: FirebaseUser | null) => user ? user.uid : null)
+    ).subscribe(userId => {
       this.currentUserId = userId;
       if (userId) {
         this.loadingContacts = true;
-        this.contactsSubscription = this.contactService.getContacts().subscribe({
-          next: (contactsData) => {
-            this.contacts = contactsData; 
+        this.contactsSubscription = this.contactService.getContacts(userId).subscribe({
+          next: (contactsData: Contact[]) => {
+            this.contacts = contactsData;
             this.loadingContacts = false;
           },
-          error: (err) => {
+          error: (err: any) => {
             console.error('Error al cargar contactos en HomePage:', err);
             this.loadingContacts = false;
           }
         });
       } else {
+        if (this.contactsSubscription) {
+          this.contactsSubscription.unsubscribe();
+        }
+        this.contacts = [];
         console.log('Usuario no autenticado en HomePage, redireccionando...');
         this.router.navigateByUrl('/login');
         this.loadingContacts = false;
@@ -63,17 +67,15 @@ export class HomePage implements OnInit, OnDestroy {
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();
     }
-    if (this.contactsSubscription) { 
+    if (this.contactsSubscription) {
       this.contactsSubscription.unsubscribe();
     }
   }
 
   openChat(contact: Contact) {
     if (contact.id) {
-      console.log('Abriendo chat con el ID de contacto:', contact.id);
-    
+      console.log('Abriendo chat con el ID de contacto (otro usuario UID):', contact.id);
       this.router.navigate(['/chat', contact.id]);
-
     } else {
       console.warn('El contacto no tiene un ID válido para abrir el chat.');
     }
@@ -90,7 +92,6 @@ export class HomePage implements OnInit, OnDestroy {
 
     const { data, role } = await modal.onDidDismiss();
     if (role === 'added' && data?.contact) {
-      // La lista de contactos se actualizará automáticamente gracias al listener de Firestore en ContactService
       console.log('Contacto agregado desde modal:', data.contact);
     }
   }
@@ -112,7 +113,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   async logout() {
     try {
-      await this.authService.signOut();
+      await this.authService.logout();
       this.router.navigateByUrl('/login');
       this.menu.close('main-menu');
     } catch (error) {

@@ -1,111 +1,174 @@
-import { Injectable } from '@angular/core';
+// src/app/core/services/fcm.service.ts
+import { Injectable, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
-import { PushNotifications } from '@capacitor/push-notifications';
+import { PushNotifications, PushNotificationSchema, ActionPerformed, RegistrationError, PushNotificationToken } from '@capacitor/push-notifications';
 import { Platform } from '@ionic/angular';
-import { getAuth } from 'firebase/auth';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+
+import { Auth, user as authStateObs } from '@angular/fire/auth';
+import {
+  Firestore,
+  doc,
+  setDoc,
+  getDoc
+} from '@angular/fire/firestore';
 import { ApiService } from './api.service';
-// Asegúrate de importar ApiService
+import { Observable, from, firstValueFrom } from 'rxjs';
+import { take, map } from 'rxjs/operators';
+import { User as AppUser } from '../interfaces/user';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FcmService {
-  private isTokenSaved = false;
 
   constructor(
     private router: Router,
-    private apiService: ApiService // Inyectamos el servicio para enviar notificaciones
+    private platform: Platform,
+    private auth: Auth,
+    private firestore: Firestore,
+    private apiService: ApiService,
+    private zone: NgZone
   ) {}
 
-  initPush() {
+  public initPush(): void {
     if (Capacitor.isNativePlatform()) {
       this.registerPush();
+    } else {
+      console.log('Push Notifications no disponible en esta plataforma.');
     }
   }
 
-  private registerPush() {
-    PushNotifications.requestPermissions().then(async (permissions) => {
-      if (permissions.receive === 'granted') {
+  private async registerPush(): Promise<void> {
+    try {
+      let permStatus = await PushNotifications.requestPermissions();
+
+      if (permStatus.receive === 'granted') {
         console.log('[Push] Permiso concedido');
         await PushNotifications.register();
       } else {
-        console.error('[Push] Permiso denegado para notificaciones push');
+        console.warn('[Push] Permiso denegado para notificaciones push');
+        return;
       }
-    });
 
-    // Listener: Registro exitoso, obtener el token
-    PushNotifications.addListener('registration', async (token) => {
-      console.log('[Push] Token FCM:', token.value);
+      PushNotifications.addListener('registration', async (token: PushNotificationToken) => {
+        console.log('[Push] Token FCM:', token.value);
+        this.saveFcmToken(token.value);
+      });
 
-      // Guardar token en Firestore si el usuario está autenticado
-      const auth = getAuth();
-      const user = auth.currentUser;
+      PushNotifications.addListener('registrationError', (error: RegistrationError) => {
+        console.error('[Push] Error en registro:', JSON.stringify(error));
+      });
 
-      if (user && !this.isTokenSaved) {
-        const db = getFirestore();
-        const userRef = doc(db, 'users', user.uid);
+      PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
+        console.log('[Push] Notificación recibida en foreground:', JSON.stringify(notification));
+        this.handleNotificationData(notification.data);
+      });
 
-        await setDoc(userRef, {
-          fcmToken: token.value
-        }, { merge: true });
+      PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
+        console.log('[Push] Acción desde notificación:', JSON.stringify(notification));
+        this.handleNotificationData(notification.notification.data);
+      });
 
-        console.log('[Push] Token guardado en Firestore');
-        this.isTokenSaved = true;
+    } catch (error) {
+      console.error('[Push] Error al registrar push notifications:', error);
+    }
+  }
+
+  private async saveFcmToken(token: string): Promise<void> {
+    const currentUser = await firstValueFrom(authStateObs(this.auth).pipe(take(1)));
+
+    if (currentUser) {
+      const userRef = doc(this.firestore, 'users', currentUser.uid);
+      await setDoc(userRef, {
+        fcmToken: token,
+        updatedAt: new Date()
+      }, { merge: true });
+      console.log('[Push] Token FCM guardado/actualizado en Firestore para el usuario:', currentUser.uid);
+    } else {
+      console.warn('[Push] No hay usuario autenticado para guardar el token FCM.');
+    }
+  }
+
+  private handleNotificationData(data: { [key: string]: any }): void {
+    console.log('[Push] Procesando datos de notificación:', data);
+
+    this.zone.run(() => {
+      if (data && data['type'] === 'incoming_call' && data['meetingId']) {
+        const meetingId = data['meetingId'];
+        const userFrom = data['userFrom'] || 'Alguien';
+
+        console.log(`Llamada entrante de ${userFrom} para la reunión: ${meetingId}`);
+
+        this.router.navigate(['/chat', data['userFromId']], {
+            queryParams: { incomingCall: true, meetingId: meetingId }
+        });
+
+      } else {
+        this.router.navigate(['/home']);
       }
-    });
-
-    // Listener: Error en el registro
-    PushNotifications.addListener('registrationError', async (error: any) => {
-      console.error('[Push] Error en registro:', JSON.stringify(error));
-    });
-
-    // Listener: Notificación recibida con la app abierta
-    PushNotifications.addListener('pushNotificationReceived', async (notification) => {
-      console.log('[Push] Notificación recibida:', JSON.stringify(notification));
-      const data = notification.notification;
-      console.log('[Push] Datos:', data);
-
-      // Ejemplo: redirigir
-      this.router.navigate(['/redirect-notification']);
-    });
-
-    // Listener: Usuario hizo clic en la notificación
-    PushNotifications.addListener('pushNotificationActionPerformed', async (notification) => {
-      console.log('[Push] Acción desde notificación:', JSON.stringify(notification));
-      const data = notification.notification;
-      console.log('[Push] Datos:', data);
-
-      this.router.navigate(['/redirect-notification']);
     });
   }
 
-  // Método para enviar notificación push
-  async sendCallNotification(userFrom: string, userTo: string, meetingId: string) {
-    const payload = {
-      token: 'FCM_TOKEN_DEL_DESTINO', // Este token debe obtenerse de Firestore o el servicio de notificaciones
-      notification: {
-        title: 'Llamada entrante',
-        body: `${userFrom} te está llamando`
-      },
-      android: {
-        priority: 'high',
-        data: {
-          userId: userTo,
-          meetingId: meetingId, // ID único para la llamada
-          type: 'incoming_call',
-          name: userFrom,
-          userFrom: userFrom
-        }
-      }
-    };
+  public async sendCallNotification(callerName: string, callerUid: string, recipientUid: string, meetingId: string): Promise<void> {
+    try {
+      const recipientDocRef = doc(this.firestore, 'users', recipientUid);
+      const recipientSnapshot = await getDoc(recipientDocRef);
 
-    // Llamar al servicio para enviar la notificación push
-    this.apiService.sendNotification(payload).then((response: any) => {
-      console.log('Notificación enviada', response);
-    }).catch((error: any) => {
-      console.error('Error al enviar la notificación', error);
-    });
+      if (!recipientSnapshot.exists()) {
+        console.error(`No se encontraron datos de usuario para el destinatario: ${recipientUid}`);
+        return;
+      }
+
+      const recipientData = recipientSnapshot.data() as AppUser;
+      const recipientFcmToken = recipientData.fcmToken;
+
+      if (!recipientFcmToken) {
+        console.warn(`El usuario ${recipientUid} no tiene un token FCM registrado.`);
+        return;
+      }
+
+      const payload = {
+        token: recipientFcmToken,
+        notification: {
+          title: '📞 Llamada entrante',
+          body: `${callerName} te está llamando...`,
+        },
+        data: {
+          type: 'incoming_call',
+          meetingId: meetingId,
+          userFromId: callerUid,
+          userFromName: callerName,
+        },
+        android: {
+            priority: 'high',
+        },
+        apns: {
+            payload: {
+                aps: {
+                    alert: {
+                        title: '📞 Llamada entrante',
+                        body: `${callerName} te está llamando...`,
+                    },
+                    sound: 'default',
+                    'content-available': 1,
+                },
+                data: {
+                    type: 'incoming_call',
+                    meetingId: meetingId,
+                    userFromId: callerUid,
+                    userFromName: callerName,
+                }
+            }
+        },
+      };
+
+      const response = await this.apiService.sendNotification(payload);
+      console.log('Notificación de llamada enviada', response);
+
+    } catch (error) {
+      console.error('Error al enviar la notificación de llamada:', error);
+      throw error;
+    }
   }
 }
