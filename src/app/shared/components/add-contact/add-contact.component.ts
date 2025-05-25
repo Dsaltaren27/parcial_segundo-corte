@@ -1,87 +1,115 @@
-import { Component, OnDestroy } from "@angular/core";
+import { Component, OnDestroy, OnInit, Input } from "@angular/core";
 import { ModalController, AlertController } from "@ionic/angular";
-import { getFirestore, collection, query, where, getDocs, doc, setDoc } from "firebase/firestore";
-import { initializeApp } from '@angular/fire/app';
-import { environment } from 'src/environments/environment';
-import { NgForm } from "@angular/forms";
-import { getAuth } from "firebase/auth";
-import { Subject } from "rxjs";
+import { NgForm, FormsModule } from "@angular/forms"; 
+import { Subject, Subscription } from "rxjs";
+import { takeUntil, take } from 'rxjs/operators'; 
+
+import { Auth, user, User as FirebaseUser } from '@angular/fire/auth';
+import { Firestore, collection, query, where, getDocs, doc, setDoc } from '@angular/fire/firestore';
+
+import { Contact } from 'src/app/core/interfaces/contact';
+import { User } from 'src/app/core/interfaces/user';
 
 @Component({
   selector: 'app-add-contact',
   templateUrl: './add-contact.component.html',
   styleUrls: ['./add-contact.component.scss'],
-  standalone: false
+  standalone: false 
+
 })
-export class AddContactComponent implements OnDestroy {
+export class AddContactComponent implements OnInit, OnDestroy {
+  @Input() loggedInUserUID!: string; // Recibir el UID del usuario logueado como Input
+
   name!: string;
   lastname!: string;
-  phone!: string;
+  phone!: string; 
 
-  private app = initializeApp(environment.firebase);
-  private db = getFirestore(this.app);
-  private auth = getAuth(); // Obtener la autenticación de Firebase
   private destroy$ = new Subject<void>();
+  private authStateSubscription!: Subscription; 
 
   constructor(
     private modalController: ModalController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private auth: Auth,       
+    private firestore: Firestore 
   ) {}
 
-  closeModal() {
-    this.modalController.dismiss();
+  ngOnInit() {
+    // Asegurarse de que el loggedInUserUID se reciba correctamente
+    if (!this.loggedInUserUID) {
+      console.warn("AddContactComponent: loggedInUserUID no fue proporcionado inicialmente. Intentando obtenerlo...");
+      this.authStateSubscription = user(this.auth).pipe(
+        take(1), 
+        takeUntil(this.destroy$)
+      ).subscribe(firebaseUser => {
+        if (firebaseUser) {
+          this.loggedInUserUID = firebaseUser.uid;
+        } else {
+          console.error("AddContactComponent: No hay usuario autenticado al iniciar el modal.");
+          this.showErrorMessage("Debe estar autenticado para agregar contactos.");
+          this.closeModal(); 
+        }
+      });
+    }
   }
 
-  async addContact(form: NgForm) {
+  closeModal(contactAdded: boolean = false, contactData?: Contact) {
+    this.modalController.dismiss({ success: contactAdded, contact: contactData });
+  }
+
+async addContact(form: NgForm) {
     if (!form.valid || !this.name.trim() || !this.lastname.trim() || !this.phone.trim()) {
       await this.showErrorMessage("Por favor, complete todos los campos correctamente.");
       return;
     }
 
-    try {
-      // Verificar si el usuario está autenticado
-      const currentUser = this.auth.currentUser;
+    if (!this.loggedInUserUID) {
+      console.error("Usuario no autenticado para agregar contacto.");
+      await this.showErrorMessage("Debe estar autenticado para agregar contactos.");
+      return;
+    }
 
-      if (!currentUser) {
-        console.error("Usuario no autenticado.");
-        await this.showErrorMessage("Debe estar autenticado para agregar contactos.");
+    try {
+      console.log("Usuario autenticado UID:", this.loggedInUserUID);
+      console.log("Buscando usuario con el número:", this.phone);
+
+      const usersCollectionRef = collection(this.firestore, "users");
+
+      const phoneQuery = query(usersCollectionRef, where("phone", "==", this.phone.trim())); // ASUMIMOS que el teléfono en Firestore es un STRING
+
+      const querySnapshot = await getDocs(phoneQuery);
+      
+      if (querySnapshot.empty) {
+        console.error("No se encontró usuario con ese número.");
+        await this.showErrorMessage("No se encontró usuario con ese número. No se puede agregar el contacto.");
         return;
       }
 
-      const userUID = currentUser.uid;
-      console.log("Usuario autenticado UID:", userUID);
+      const foundUserDoc = querySnapshot.docs[0];
+      const foundUserData = foundUserDoc.data() as User;
 
-
-
-
-      console.log("Buscando usuario con el número:", this.phone);
-      const usersCollectionRef = collection(this.db, "users");
-      const phoneQuery = query(usersCollectionRef, where("phone", "==", this.phone));
-      const querySnapshot = await getDocs(phoneQuery);
-      console.log("Resultados de la consulta:", querySnapshot);
-      if (querySnapshot.empty) {
-          console.error("No se encontró usuario con ese número.");
-          await this.showErrorMessage("No se encontró usuario con ese número. No se puede agregar el contacto.");
-          return;
+      if (foundUserData.uid === this.loggedInUserUID) {
+        await this.showErrorMessage("No puedes agregarte a ti mismo como contacto.");
+        return;
       }
 
-      console.log("Usuario con el número encontrado. Agregando a contactos...");
+      console.log("Usuario con el número encontrado:", foundUserData.uid, foundUserData.name);
 
-      // Guardar el contacto en la subcolección del usuario autenticado
-      const contactData = {
-        name: this.name.trim(),
-        lastname: this.lastname.trim(),
-        phone: this.phone.trim()
+      const contactToSave: Contact = {
+        id: foundUserData.uid,
+        name: foundUserData.name,
+        lastname: foundUserData.lastname,
+        phone: String(foundUserData.phone), 
       };
 
-      const userDocRef = doc(this.db, `users/${userUID}/contacts/${this.phone}`);
-      await setDoc(userDocRef, contactData, { merge: true });
+      const userContactDocRef = doc(this.firestore, `users/${this.loggedInUserUID}/contacts/${contactToSave.id}`);
+      await setDoc(userContactDocRef, contactToSave, { merge: true });
 
-      console.log("Contacto guardado bajo el usuario autenticado.");
+      console.log("Contacto guardado bajo el usuario autenticado con UID:", contactToSave.id);
       await this.showSuccessMessage("Contacto guardado exitosamente.");
-      this.modalController.dismiss({ success: true, contact: contactData });
+      this.closeModal(true, contactToSave);
 
-      this.clearForm(form);
+      form.resetForm();
     } catch (error: any) {
       console.error("Error al agregar contacto:", error);
       const errorMessage = error?.message || "Error desconocido";
@@ -107,15 +135,11 @@ export class AddContactComponent implements OnDestroy {
     await alert.present();
   }
 
-  clearForm(form: NgForm) {
-    form.resetForm();
-    this.name = '';
-    this.lastname = '';
-    this.phone = '';
-  }
-
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.authStateSubscription) {
+      this.authStateSubscription.unsubscribe();
+    }
   }
 }

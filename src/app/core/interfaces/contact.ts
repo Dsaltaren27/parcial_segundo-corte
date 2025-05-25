@@ -3,4 +3,5 @@ export interface Contact {
     name: string;  
     lastname?: string;
     phone: string;
+    uid?: string; // UID del usuario al que pertenece el contacto
 }

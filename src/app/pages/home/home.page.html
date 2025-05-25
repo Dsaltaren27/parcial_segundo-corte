@@ -2,34 +2,39 @@
   <ion-menu side="start" menuId="main-menu" contentId="main-content">
     <ion-header>
       <ion-toolbar>
-        <ion-title>Contactos</ion-title>
-        <ion-list>
+        <ion-title>Menú</ion-title>
+        <!-- Esta lista de contactos en el menú lateral es redundante con la lista principal.
+             Se recomienda eliminarla o usarla para otro propósito. Por ahora, la comento. -->
+        <!-- <ion-list>
           <ion-item *ngFor="let contact of contacts">
             <h1>{{ contact.name }}</h1>
           </ion-item>
-        </ion-list>
-        </ion-toolbar>
+        </ion-list> -->
+      </ion-toolbar>
     </ion-header>
     <ion-content>
       <ion-list>
-        <ion-item button>
-          <ion-icon name="settings" slot="start" aria-label="Configuraciones"></ion-icon>
+        <ion-item button (click)="goToProfile()">
+          <ion-icon name="person-circle-outline" slot="start" aria-label="Mi Perfil"></ion-icon>
+          <ion-label>Mi Perfil</ion-label>
+        </ion-item>
+        <ion-item button (click)="goToSettings()">
+          <ion-icon name="settings-outline" slot="start" aria-label="Configuraciones"></ion-icon>
           <ion-label>Configuraciones</ion-label>
+        </ion-item>
+        <ion-item button (click)="goToHelp()">
+          <ion-icon name="help-circle-outline" slot="start" aria-label="Ayuda"></ion-icon>
+          <ion-label>Ayuda</ion-label>
         </ion-item>
         <ion-item button (click)="logout()">
           <ion-icon name="log-out-outline" slot="start" aria-label="Cerrar sesión"></ion-icon>
           <ion-label>Salir</ion-label>
-        </ion-item>
-        <ion-item button>
-          <ion-icon name="help" slot="start" aria-label="Ayuda"></ion-icon>
-          <ion-label>Ayuda</ion-label>
         </ion-item>
       </ion-list>
     </ion-content>
   </ion-menu>
 
   <div class="ion-page" id="main-content">
-
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
@@ -40,37 +45,45 @@
     </ion-header>
 
     <ion-content class="ion-padding">
-
       <ion-card>
         <ion-card-header>
           <ion-card-title>Lista de Contactos</ion-card-title>
         </ion-card-header>
         <ion-card-content>
+          <div *ngIf="currentUserId" class="text-sm text-gray-600 dark:text-gray-300 mb-4 text-center">
+            Tu ID de Usuario: <span class="font-mono text-xs text-indigo-700 dark:text-indigo-400">{{ currentUserId }}</span>
+          </div>
 
-          <ion-list *ngIf="contacts && contacts.length > 0; else noContacts">
-            <ion-item *ngFor="let contact of contacts">
+          <div *ngIf="loadingContacts" class="flex items-center justify-center py-4">
+            <ion-spinner name="crescent"></ion-spinner>
+            <span class="ml-2 text-gray-500 dark:text-gray-400">Cargando contactos...</span>
+          </div>
+
+          <ion-list *ngIf="!loadingContacts && contacts && contacts.length > 0; else noContacts">
+            <ion-item *ngFor="let contact of contacts" button (click)="openChat(contact)">
+              <ion-avatar slot="start" class="w-12 h-12 rounded-full bg-indigo-200 dark:bg-indigo-700 flex items-center justify-center text-indigo-700 dark:text-indigo-200">
+                <span class="text-xl font-semibold">{{ contact.name.charAt(0) }}</span>
+              </ion-avatar>
               <ion-label>
-                <h2>{{ contact.name }}</h2>
-                <h3>{{ contact.lastname }}</h3>
+                <h2>{{ contact.name }} {{ contact.lastname }}</h2>
                 <p>{{ contact.phone }}</p>
               </ion-label>
-              <ion-button fill="clear" slot="end" >
-                <ion-icon name="call" aria-label="Editar contacto"></ion-icon>
+              <ion-button fill="clear" slot="end" (click)="openChat(contact); $event.stopPropagation()">
+                <ion-icon name="chatbubble-ellipses-outline" aria-label="Abrir chat"></ion-icon>
               </ion-button>
             </ion-item>
-    
           </ion-list>
 
           <ng-template #noContacts>
-            <p class="no-contacts-message">No hay contactos guardados.</p>
+            <p *ngIf="!loadingContacts" class="no-contacts-message text-center text-gray-500 dark:text-gray-400 py-4">No hay contactos guardados.</p>
           </ng-template>
 
         </ion-card-content>
       </ion-card>
 
-      <div class="button-container">
+      <div class="button-container mt-4">
         <ion-button expand="full" fill="solid" color="primary" (click)="openAddContactModal()">
-          <ion-icon name="person-add" slot="start" aria-label="Agregar contacto"></ion-icon>
+          <ion-icon name="person-add-outline" slot="start" aria-label="Agregar contacto"></ion-icon>
           Agregar contacto
         </ion-button>
       </div>

@@ -6,22 +6,24 @@ import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from './components/header/header.component';
 import { AuthService } from '../core/services/auth.service';
 import { AddContactComponent } from './components/add-contact/add-contact.component';
+import { ChatComponent } from './components/chat/chat.component';
 
 @NgModule({
   declarations: [
     HeaderComponent,
-    AddContactComponent
+    AddContactComponent,
+    ChatComponent
   ],
   exports: [
     HeaderComponent,
     RouterModule,
-    AddContactComponent
+    AddContactComponent,
   ],
   imports: [
     CommonModule,
     IonicModule,
     RouterModule,
-    FormsModule // ✅ Agregado aquí
+    FormsModule 
   ],
   providers: [
 

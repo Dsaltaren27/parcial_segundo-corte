@@ -1,98 +1,122 @@
-import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { IonicModule, ModalController, MenuController } from '@ionic/angular';
+import { Router } from '@angular/router';
+import { Observable, Subscription } from 'rxjs';
 import { Contact } from 'src/app/core/interfaces/contact';
-import { AuthService } from 'src/app/core/services/auth.service';
 import { ContactService } from 'src/app/core/services/contact.service';
+import { AuthService } from 'src/app/core/services/auth.service';
 import { AddContactComponent } from 'src/app/shared/components/add-contact/add-contact.component';
-import { getAuth } from "firebase/auth";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+
+
+// Importa los iconos de Lucide Angular si los usas en tu HTML
+// import { Plus, User, LogOut, Settings, HelpCircle, MessageSquare } from 'lucide-angular';
+
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
-  standalone: false
+  standalone: false, // Asegúrate de que sea standalone: true
+
 })
-export class HomePage implements OnInit {
-  contacts: Contact[] = [];
-  loggedInUserUID: string | null = null; // Guarda el UID del usuario autenticado
+export class HomePage implements OnInit, OnDestroy {
+  public contacts: Contact[] = [];
+  public currentUserId: string | null = null;
+  public loadingContacts: boolean = true;
+
+  private authSubscription!: Subscription;
+  private contactsSubscription!: Subscription; // ¡MUY IMPORTANTE!
 
   constructor(
+    private router: Router,
     private contactService: ContactService,
     private authService: AuthService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private menu: MenuController
   ) {}
 
   ngOnInit() {
-    this.getCurrentUserUID();
-    setTimeout(() => this.loadContacts(), 500); // Espera para asegurar que el usuario esté autenticado antes de cargar datos
-  }
-
-  getCurrentUserUID() {
-    const auth = getAuth();
-    const currentUser = auth.currentUser;
-
-    if (currentUser) {
-      this.loggedInUserUID = currentUser.uid;
-      console.log("UID del usuario autenticado:", this.loggedInUserUID);
-    } else {
-      console.error("No hay usuario autenticado.");
-    }
-  }
-
-  async loadContacts() {
-    if (!this.loggedInUserUID) {
-      console.error("No se puede cargar contactos sin usuario autenticado.");
-      return;
-    }
-
-    try {
-      const db = getFirestore();
-      const contactsCollectionRef = collection(db, `users/${this.loggedInUserUID}/contacts`);
-      const querySnapshot = await getDocs(contactsCollectionRef);
-
-      if (querySnapshot.empty) {
-        console.log("No se encontraron contactos para este usuario.");
-        this.contacts = [];
-        return;
+    this.authSubscription = this.authService.getCurrentUserId().subscribe(userId => {
+      this.currentUserId = userId;
+      if (userId) {
+        this.loadingContacts = true;
+        this.contactsSubscription = this.contactService.getContacts().subscribe({
+          next: (contactsData) => {
+            this.contacts = contactsData; 
+            this.loadingContacts = false;
+          },
+          error: (err) => {
+            console.error('Error al cargar contactos en HomePage:', err);
+            this.loadingContacts = false;
+          }
+        });
+      } else {
+        console.log('Usuario no autenticado en HomePage, redireccionando...');
+        this.router.navigateByUrl('/login');
+        this.loadingContacts = false;
       }
+    });
+  }
 
-      this.contacts = querySnapshot.docs.map(doc => ({
-        ...(doc.data() as Contact),
-        id: doc.id // Opcionalmente incluir el ID del documento
-      }));
+  ngOnDestroy() {
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
+    if (this.contactsSubscription) { 
+      this.contactsSubscription.unsubscribe();
+    }
+  }
 
-      console.log("Contactos cargados:", this.contacts);
-    } catch (error) {
-      console.error("Error al cargar contactos:", error);
+  openChat(contact: Contact) {
+    if (contact.id) {
+      console.log('Abriendo chat con el ID de contacto:', contact.id);
+    
+      this.router.navigate(['/chat', contact.id]);
+
+    } else {
+      console.warn('El contacto no tiene un ID válido para abrir el chat.');
     }
   }
 
   async openAddContactModal() {
-    if (!this.loggedInUserUID) {
-      console.error("No se puede agregar contactos sin usuario autenticado.");
-      return;
-    }
-
     const modal = await this.modalController.create({
       component: AddContactComponent,
       componentProps: {
-        loggedInUserUID: this.loggedInUserUID // Pasamos el UID al modal
+        loggedInUserUID: this.currentUserId
       }
     });
     await modal.present();
 
-    const { data } = await modal.onDidDismiss();
-    if (data?.success && data.contact) {
-      this.updateContactList(data.contact);
+    const { data, role } = await modal.onDidDismiss();
+    if (role === 'added' && data?.contact) {
+      // La lista de contactos se actualizará automáticamente gracias al listener de Firestore en ContactService
+      console.log('Contacto agregado desde modal:', data.contact);
     }
   }
 
-  updateContactList(newContact: Contact) {
-    this.contacts = [...this.contacts, newContact];
+  goToProfile() {
+    this.router.navigateByUrl('/profile');
+    this.menu.close('main-menu');
   }
 
-  logout() {
-    this.authService.logout();
+  goToSettings() {
+    this.menu.close('main-menu');
+    console.log('Navegar a Configuraciones');
+  }
+
+  goToHelp() {
+    this.menu.close('main-menu');
+    console.log('Navegar a Ayuda');
+  }
+
+  async logout() {
+    try {
+      await this.authService.signOut();
+      this.router.navigateByUrl('/login');
+      this.menu.close('main-menu');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
   }
 }

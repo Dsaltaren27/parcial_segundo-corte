@@ -3,12 +3,11 @@ import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from 'src/app/core/services/auth.service';
 
-
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
-  standalone: false
+  standalone:false
 })
 export class LoginPage {
   email = '';
@@ -43,7 +42,6 @@ export class LoginPage {
       console.error('Error al iniciar sesión:', error);
       let message = 'Error al iniciar sesión. Intente de nuevo.';
 
-      // Opcional: Manejo específico de errores de Firebase
       switch (error?.code) {
         case 'auth/user-not-found':
           message = 'Usuario no encontrado.';
@@ -53,6 +51,12 @@ export class LoginPage {
           break;
         case 'auth/invalid-email':
           message = 'Correo electrónico inválido.';
+          break;
+        case 'auth/network-request-failed': 
+          message = 'Error de red. Verifique su conexión a internet.';
+          break;
+        default:
+          message = error?.message || 'Error desconocido al iniciar sesión.';
           break;
       }
 

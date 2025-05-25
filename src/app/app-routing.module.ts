@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { NoAuthGuard } from './core/guards/no-auth.guard';
+import { ChatComponent } from './shared/components/chat/chat.component';
 
 
 const routes: Routes = [
@@ -33,11 +34,15 @@ const routes: Routes = [
     path: 'redirect-notification',
     loadChildren: () => import('./pages/redirect-notification/redirect-notification.module').then( m => m.RedirectNotificationPageModule),
     canActivate: [AuthGuard]  // Protege la ruta de notificación de redirección
-  },  {
+  },
+  {
     path: 'video-call',
     loadChildren: () => import('./pages/video-call/video-call.module').then( m => m.VideoCallPageModule)
   },
-
+  {
+    path: 'chat/:otherUserId',
+    component:ChatComponent
+  }
 
 
 
