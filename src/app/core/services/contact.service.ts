@@ -12,8 +12,7 @@ import { Contact } from '../interfaces/contact';
 export class ContactService {
 
   constructor(private firestore: Firestore) {}
-
-  getUserPhoneNumber(uid: string): Observable<{ phone: string | null, name: string | null } | null> {
+getUserPhoneNumber(uid: string): Observable<{ phone: string | null, name: string | null } | null> {
     const userDocRef = doc(this.firestore, 'users', uid);
     return from(getDoc(userDocRef)).pipe(
       map(snapshot => {
@@ -28,8 +27,8 @@ export class ContactService {
           console.warn(`No se encontraron datos de usuario en Firestore para el UID: ${uid}`);
           return null;
         }
-      }),
-      take(1)
+      })
+      // Eliminado: take(1) porque from(getDoc(...)) ya emite un solo valor y completa
     );
   }
 

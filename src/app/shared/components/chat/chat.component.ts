@@ -62,8 +62,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.destroy$.unsubscribe();
   }
 
-  private setupAuthAndChat(): void {
-    this.authSubscription = authState(this.auth).subscribe(
+private setupAuthAndChat(): void {
+    this.authSubscription = this.authService.getAuthState().subscribe( // <-- CAMBIO AQUÍ
       (user: User | null) => {
         if (user) {
           this.currentUserUID = user.uid;
@@ -87,7 +87,6 @@ export class ChatComponent implements OnInit, OnDestroy {
     );
     this.destroy$.add(this.authSubscription);
   }
-
   private loadOtherUserPhoneAndName(): void {
     if (!this.otherUserId) return;
 

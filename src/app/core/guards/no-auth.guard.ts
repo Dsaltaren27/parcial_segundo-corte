@@ -15,7 +15,7 @@ export class NoAuthGuard implements CanActivate {
   ) {}
 
   canActivate(): Observable<boolean | UrlTree> {
-    return this.authService.getFirebaseUser().pipe(
+    return this.authService.getAuthState().pipe(
       take(1), 
       map((user: FirebaseUser | null) => {
         if (user) {

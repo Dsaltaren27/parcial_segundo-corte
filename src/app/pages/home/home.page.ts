@@ -35,7 +35,7 @@ export class HomePage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.authSubscription = this.authService.getFirebaseUser().pipe(
+    this.authSubscription = this.authService.getAuthState().pipe(
       map((user: FirebaseUser | null) => user ? user.uid : null)
     ).subscribe(userId => {
       this.currentUserId = userId;

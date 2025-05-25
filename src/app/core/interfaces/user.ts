@@ -3,7 +3,7 @@ export interface User {
     email: string;
     name: string;
     lastname: string;
-    phone: number;
+    phone: string | number;
     uid?: string;
     fcmToken?: string;
      createdAt?: Date;

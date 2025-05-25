@@ -15,7 +15,7 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   canActivate(): Observable<boolean | UrlTree> {
-    return this.authService.getFirebaseUser().pipe(
+    return this.authService.getAuthState().pipe(
       map((user: FirebaseUser | null) => {
         if (!user) {
           return this.router.createUrlTree(['/login']);

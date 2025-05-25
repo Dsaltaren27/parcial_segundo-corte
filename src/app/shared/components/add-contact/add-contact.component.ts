@@ -87,6 +87,7 @@ async addContact(form: NgForm) {
 
       const foundUserDoc = querySnapshot.docs[0];
       const foundUserData = foundUserDoc.data() as User;
+      
 
       if (foundUserData.uid === this.loggedInUserUID) {
         await this.showErrorMessage("No puedes agregarte a ti mismo como contacto.");
