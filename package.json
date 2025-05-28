@@ -40,6 +40,7 @@
     "@ionic/angular": "^8.5.5",
     "@ionic/storage-angular": "^4.0.0",
     "@supabase/supabase-js": "^2.49.8",
+    "capacitor-voice-recorder": "^7.0.5",
     "firebase": "^11.6.0",
     "ionicons": "^7.0.0",
     "mapbox-gl": "^3.12.0",

@@ -15,6 +15,7 @@ import {
 } from '@angular/fire/firestore';
 import { Observable, Subscription } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { getStorage, ref, uploadBytes, getDownloadURL } from '@angular/fire/storage';
 
 import { Userprofile } from 'src/app/core/interfaces/userprofile';
 
@@ -74,8 +75,8 @@ export class ChatService {
     });
   }
 
-  async sendMessage(chatId: string, senderId: string, text: string): Promise<void> {
-    if (!text.trim()) {
+  async sendMessage(chatId: string, senderId: string, text: string = '', options?: any): Promise<void> {
+    if (!text.trim() && !options) {
       return Promise.resolve();
     }
 
@@ -84,16 +85,44 @@ export class ChatService {
       `artifacts/${this.getAppIdForFirestore()}/public/data/chats/${chatId}/messages`
     );
 
+    let messageData: any = {
+      senderId: senderId,
+      timestamp: serverTimestamp(),
+    };
+
+    if (options && typeof options === 'object') {
+      Object.assign(messageData, options);
+      if (!messageData.text && text.trim()) {
+        messageData.text = text.trim();
+      } else if (!messageData.text && !text.trim()) {
+        messageData.text = '';
+      }
+    } else {
+      messageData.text = text.trim();
+      messageData.type = 'text';
+    }
+
     try {
-      await addDoc(messagesCollectionRef, {
-        senderId: senderId,
-        text: text,
-        type: 'text',
-        timestamp: serverTimestamp(),
-      });
+      await addDoc(messagesCollectionRef, messageData);
       console.log("Mensaje enviado exitosamente.");
     } catch (error) {
       console.error("Error al enviar mensaje en ChatService:", error);
+      throw error;
+    }
+  }
+
+  async uploadFile(file: File): Promise<string> {
+    const storage = getStorage();
+    const filePath = `chat_files/${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, filePath);
+
+    try {
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      console.log('Archivo subido exitosamente:', downloadURL);
+      return downloadURL;
+    } catch (error) {
+      console.error('Error al subir el archivo:', error);
       throw error;
     }
   }

@@ -20,7 +20,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content class="ion-padding custom-scrollbar">
   <div *ngIf="loading" class="ion-text-center ion-padding-top">
     <ion-spinner></ion-spinner>
     <p>Cargando mensajes...</p>
@@ -32,12 +32,38 @@
     </ion-text>
   </div>
 
-  <ion-list *ngIf="!loading && !error && messages.length > 0">
-    <ion-item *ngFor="let message of messages" [class.ion-text-right]="message.senderId === currentUserUID"
-      lines="none">
-      <div class="message-bubble" [class.my-message]="message.senderId === currentUserUID"
+  <ion-list *ngIf="!loading && !error && messages.length > 0" lines="none" class="message-list">
+    <ion-item *ngFor="let message of messages"
+      [class.ion-text-right]="message.senderId === currentUserUID"
+      class="message-item"
+    >
+      <div class="message-bubble"
+        [class.my-message]="message.senderId === currentUserUID"
         [class.other-message]="message.senderId !== currentUserUID">
-        <p class="message-text">{{ message.text }}</p>
+
+        <p *ngIf="message.type === 'text'" class="message-text">{{ message.text }}</p>
+
+        <div *ngIf="message.type === 'file'" class="file-message-content">
+          <p class="font-semibold">Archivo: {{ message.fileName }}</p>
+          <a [href]="message.fileUrl" target="_blank" class="file-link">
+            Descargar {{ message.mimeType.includes('image') ? 'imagen' : 'archivo' }}
+          </a>
+          <img *ngIf="message.mimeType.includes('image')" [src]="message.fileUrl" alt="Archivo de imagen" class="message-image" />
+          <audio *ngIf="message.mimeType.includes('audio')" [src]="message.fileUrl" controls class="message-audio"></audio>
+          <video *ngIf="message.mimeType.includes('video')" [src]="message.fileUrl" controls class="message-video"></video>
+        </div>
+
+        <div *ngIf="message.type === 'location'" class="location-message-content">
+          <p class="font-semibold">Ubicación:</p>
+          <a
+            [href]="'https://www.google.com/maps/search/?api=1&query=' + message.latitude + ',' + message.longitude"
+            target="_blank"
+            class="location-link"
+          >
+            Ver en Google Maps ({{ message.latitude | number:'1.4-4' }}, {{ message.longitude | number:'1.4-4' }})
+          </a>
+        </div>
+
         <ion-note class="message-time">{{ message.timestamp?.toDate() | date:'shortTime' }}</ion-note>
       </div>
     </ion-item>
@@ -59,16 +85,17 @@
         <ion-button (click)="sendMessage()" [disabled]="!newMessageText.trim() || !isAuthReady || !chatId">
           <ion-icon slot="icon-only" name="send"></ion-icon>
         </ion-button>
-        
-        <ion-button>
+
+        <ion-button (click)="startAudioRecording()" [ngClass]="{'recording-active': isRecording}">
           <ion-icon name="mic" slot="icon-only"></ion-icon>
         </ion-button>
 
-        <ion-button>
+        <ion-button (click)="triggerFileSelect()">
           <ion-icon name="document-attach" slot="icon-only"></ion-icon>
         </ion-button>
+        <input type="file" #fileInput (change)="handleFileInput($event)" class="hidden-file-input" />
 
-        <ion-button>
+        <ion-button (click)="sendLocation()">
           <ion-icon name="location" slot="icon-only"></ion-icon>
         </ion-button>
       </ion-buttons>
