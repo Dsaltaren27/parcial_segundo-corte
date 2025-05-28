@@ -38,7 +38,11 @@ const routes: Routes = [
   {
     path: 'chat/:otherUserId',
     component:ChatComponent
+  },  {
+    path: 'userprofile',
+    loadChildren: () => import('./pages/userprofile/userprofile.module').then( m => m.UserprofilePageModule)
   }
+
 
 
 

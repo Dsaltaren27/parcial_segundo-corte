@@ -97,7 +97,8 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   goToProfile() {
-    this.router.navigateByUrl('/profile');
+    console.log('Intentando navegar a /profile...')
+    this.router.navigateByUrl('/userprofile');
     this.menu.close('main-menu');
   }
 

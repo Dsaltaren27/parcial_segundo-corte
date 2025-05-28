@@ -9,6 +9,8 @@ export const environment = {
     appId: "1:270357603969:web:0a17eeb4bea3abb47a0f80",
     measurementId: "G-9K8QQCZGBT"
   },
-  supabaseUrl:'https://gyydnrdiwtcbrjlngvpf.supabase.co',
-  supabaseKey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5eWRucmRpd3RjYnJqbG5ndnBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgxMzgyNTEsImV4cCI6MjA2MzcxNDI1MX0._WRX76a2cM4Abi9Udvq9iW00LnVrnpSyERygAgkSkOk'
+  supabase:{
+  Url:'https://gyydnrdiwtcbrjlngvpf.supabase.co',
+  Key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5eWRucmRpd3RjYnJqbG5ndnBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgxMzgyNTEsImV4cCI6MjA2MzcxNDI1MX0._WRX76a2cM4Abi9Udvq9iW00LnVrnpSyERygAgkSkOk'
+  }
 };
