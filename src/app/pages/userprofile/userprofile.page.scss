@@ -1,0 +1,147 @@
+/* userprofile.page.scss */
+
+ion-content {
+  --background: var(--ion-color-light); // Fondo ligero para toda la página
+}
+
+// Contenedor principal del contenido para aplicar padding y centrado
+.profile-page-content {
+  max-width: 700px; // Un ancho máximo para pantallas grandes
+  margin: auto; // Centra el contenido horizontalmente
+  padding: 15px; // Padding general para el contenido
+}
+
+/* -------------------------------------- */
+/* SECCIÓN DEL ENCABEZADO DEL PERFIL */
+/* -------------------------------------- */
+.profile-header {
+  background: var(--ion-color-primary); // Fondo del color primario
+  color: var(--ion-color-primary-contrast); // Texto blanco sobre el fondo primario
+  padding: 40px 20px 20px 20px; // Más padding arriba para la foto
+  margin: -15px -15px 20px -15px; // Extiende el fondo a los bordes de la pantalla (compensando el ion-padding del content)
+  border-bottom-left-radius: 25px; // Esquinas inferiores redondeadas
+  border-bottom-right-radius: 25px; // Para un look más suave
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); // Sombra para darle profundidad
+
+  // Posiciona el avatar para que 'sobresalga' un poco o tenga un margen visual
+  .profile-avatar {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 15px auto; // Centrado, con espacio inferior
+    border: 5px solid var(--ion-color-primary-contrast); // Borde blanco prominente
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3); // Sombra más fuerte para la foto
+  }
+
+  // Estilo para el botón de 'Cambiar foto'
+  ion-button[fill="clear"] {
+    --color: var(--ion-color-primary-contrast); // Color blanco para el texto del botón
+    font-size: 0.95em;
+    margin-bottom: 20px;
+    ion-icon {
+      margin-inline-end: 5px; // Espacio entre el icono y el texto
+    }
+  }
+
+  .user-display-name {
+    font-size: 1.8em; // Nombre más grande y prominente
+    font-weight: bold;
+    margin: 0 0 5px 0; // Ajusta márgenes
+    color: var(--ion-color-primary-contrast);
+  }
+
+  .user-email-display {
+    font-size: 1em;
+    color: rgba(255, 255, 255, 0.8); // Email un poco desvanecido
+    margin: 0;
+  }
+}
+
+/* -------------------------------------- */
+/* TARJETAS DE INFORMACIÓN */
+/* -------------------------------------- */
+.profile-info-card {
+  margin-bottom: 20px; // Espacio entre las tarjetas
+  border-radius: 15px; // Bordes más redondeados para las tarjetas
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1); // Sombra sutil para un efecto flotante
+
+  ion-card-header {
+    background: var(--ion-color-light-shade); // Un fondo ligeramente gris para el encabezado de la tarjeta
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    padding-bottom: 10px; // Ajusta el padding inferior
+  }
+
+  ion-card-title {
+    font-size: 1.2em; // Título de la tarjeta
+    font-weight: 600;
+    color: var(--ion-color-dark); // Color de texto oscuro
+    padding-left: 15px; // Padding para el título dentro del header
+  }
+
+  ion-list {
+    background: transparent; // Para que la lista use el fondo de la tarjeta
+    padding: 0; // Quita el padding predeterminado de la lista
+  }
+
+  ion-item {
+    --background: transparent; // El item usa el fondo de la lista/tarjeta
+    --padding-start: 20px; // Padding a la izquierda
+    --padding-end: 20px; // Padding a la derecha
+    border-bottom: 1px solid var(--ion-color-step-100); // Ligeras líneas divisorias
+    &:last-child {
+      border-bottom: none; // Sin línea en el último item de la lista
+    }
+  }
+
+  ion-label {
+    font-weight: 500; // Etiqueta más sutil
+    color: var(--ion-color-medium); // Color gris para la etiqueta
+    font-size: 0.9em; // Tamaño más pequeño
+    margin-bottom: 2px; // Espacio entre label e input
+  }
+
+  ion-input {
+    font-size: 1em; // Tamaño estándar para los inputs
+    color: var(--ion-color-dark);
+    --padding-top: 5px;
+    --padding-bottom: 5px;
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+
+  ion-input[readonly] {
+    opacity: 0.8;
+    color: var(--ion-color-dark-shade);
+  }
+}
+
+/* -------------------------------------- */
+/* BOTÓN DE GUARDAR GLOBAL */
+/* -------------------------------------- */
+ion-button[expand="block"] {
+  margin-top: 10px; // Espacio desde la última tarjeta
+  height: 55px; // Un poco más alto para el botón principal
+  font-size: 1.15em; // Texto más grande
+  font-weight: bold;
+  --border-radius: 12px; // Bordes redondeados consistentes
+  box-shadow: 0px 6px 20px rgba(var(--ion-color-primary-rgb), 0.4); // Sombra prominente con color primario
+
+  &:disabled {
+    box-shadow: none;
+    opacity: 0.6;
+  }
+}
+
+// Centra el contenido en pantallas más grandes
+@media (min-width: 768px) {
+  .profile-page-content {
+    padding: 30px;
+  }
+  .profile-header {
+    margin-left: -30px;
+    margin-right: -30px;
+    margin-bottom: 30px;
+    border-bottom-left-radius: 35px;
+    border-bottom-right-radius: 35px;
+  }
+}

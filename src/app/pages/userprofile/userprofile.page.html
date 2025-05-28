@@ -1,57 +1,75 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
+<ion-header>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
     <ion-title>Mi Perfil</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="handleSaveProfile()" [disabled]="loadingProfile">
+        <ion-icon slot="icon-only" name="save"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
-  <div *ngIf="loadingProfile" class="flex items-center justify-center h-full">
-    <ion-spinner name="crescent"></ion-spinner>
-    <span class="ml-2 text-gray-500 dark:text-gray-400">Cargando perfil...</span>
+<ion-content class="ion-padding">
+  <div *ngIf="loadingProfile" class="ion-text-center ion-padding-top">
+    <ion-spinner></ion-spinner>
+    <p>Cargando perfil...</p>
   </div>
 
-  <div *ngIf="!loadingProfile && userId" class="profile-container flex flex-col items-center">
-    <ion-avatar class="profile-avatar w-32 h-32 mb-4 relative overflow-hidden rounded-full border-4 border-indigo-400 dark:border-indigo-600">
-      <img [src]="profilePicUrl || 'assets/default-profile.png'" alt="Foto de Perfil" (error)="profilePicUrl = 'assets/default-profile.png'">
-      <ion-fab-button size="small" (click)="handleChoosePhoto()" class="absolute bottom-0 right-0 transform translate-x-1/4 translate-y-1/4 z-10">
-        <ion-icon name="camera"></ion-icon>
-      </ion-fab-button>
-    </ion-avatar>
+  <div *ngIf="!loadingProfile && currentUser" class="profile-page-content">
+    <div class="profile-header ion-text-center ion-padding">
+      <ion-avatar class="profile-avatar" (click)="handleChoosePhoto()">
+        <img [src]="profilePicUrl || 'assets/default-user-avatar.png'" alt="Foto de perfil">
+      </ion-avatar>
+      <ion-button fill="clear" (click)="handleChoosePhoto()">
+        <ion-icon slot="start" name="camera"></ion-icon>
+        Cambiar foto
+      </ion-button>
+      <h2 class="user-display-name">
+        {{ profileName || 'Usuario' }} {{ profileLastname }}
+      </h2>
+      <p class="user-email-display">{{ profileEmail || userEmail }}</p>
+    </div>
 
-    <h2 class="text-2xl font-semibold mb-2 text-center">{{ profileName || 'Usuario' }} {{ profileLastname }}</h2>
-    <p class="text-sm text-gray-600 dark:text-gray-300 mb-6 text-center">
-      ID de Usuario: <span class="font-mono text-xs text-indigo-700 dark:text-indigo-400">{{ userId }}</span>
-    </p>
+    <ion-card class="profile-info-card">
+      <ion-card-header>
+        <ion-card-title>Información Personal</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full">
+          <ion-item>
+            <ion-label position="stacked">Nombre</ion-label>
+            <ion-input [(ngModel)]="profileName" type="text" placeholder="Tu nombre"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Apellido</ion-label>
+            <ion-input [(ngModel)]="profileLastname" type="text" placeholder="Tu apellido"></ion-input>
+          </ion-item>
+          </ion-list>
+      </ion-card-content>
+    </ion-card>
 
-    <ion-list class="profile-form w-full max-w-md">
-      <ion-item>
-        <ion-label position="stacked">Nombre</ion-label>
-        <ion-input [(ngModel)]="profileName" placeholder="Tu nombre"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Apellido</ion-label>
-        <ion-input [(ngModel)]="profileLastname" placeholder="Tu apellido"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Número de Teléfono</ion-label>
-        <ion-input type="tel" [(ngModel)]="profilePhone" placeholder="Tu número de teléfono"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Correo Electrónico</ion-label>
-        <ion-input [value]="userEmail" readonly disabled></ion-input>
-      </ion-item>
-    </ion-list>
+    <ion-card class="profile-info-card">
+      <ion-card-header>
+        <ion-card-title>Contacto</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full">
+          <ion-item>
+            <ion-label position="stacked">Teléfono</ion-label>
+            <ion-input [(ngModel)]="profilePhone" type="tel" placeholder="Tu número de teléfono"></ion-input>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
 
-    <ion-button expand="full" class="mt-8 w-full max-w-md" (click)="handleSaveProfile()">
-      <ion-icon name="save-outline" slot="start"></ion-icon>
-      Guardar Cambios
-    </ion-button>
-  </div>
+    <div class="ion-padding">
+      <ion-button expand="block" (click)="handleSaveProfile()" [disabled]="loadingProfile">
+        Guardar Cambios
+      </ion-button>
+    </div>
 
-  <div *ngIf="!loadingProfile && !userId" class="no-user-message text-center text-gray-500 dark:text-gray-400 py-4">
-    No hay usuario autenticado. Por favor, inicia sesión.
   </div>
 </ion-content>

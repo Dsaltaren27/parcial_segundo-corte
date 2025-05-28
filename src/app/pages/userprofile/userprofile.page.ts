@@ -178,7 +178,7 @@ export class UserprofilePage implements OnInit, OnDestroy { // Implementa OnDest
 
         try {
           const supabase = this.supabaseService.getSupabase();
-          const bucketName = 'photo'; // Nombre de tu bucket en Supabase Storage
+          const bucketName = 'call-2cfb6'; // Nombre de tu bucket en Supabase Storage
           const fileName = `${this.userId}/${Date.now()}.jpeg`; // Ruta y nombre del archivo
 
           const { data, error } = await supabase
@@ -198,7 +198,7 @@ export class UserprofilePage implements OnInit, OnDestroy { // Implementa OnDest
           // Obtener la URL pública de la imagen
           const { data: publicUrlData } = supabase
             .storage
-            .from(bucketName)
+            .from('call-2cfb6')
             .getPublicUrl(fileName);
 
           this.profilePicUrl = publicUrlData.publicUrl;
