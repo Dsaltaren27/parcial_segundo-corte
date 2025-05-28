@@ -1,8 +1,39 @@
 /* src/app/pages/chat/chat.component.scss */
 
-ion-content {
-  --background: var(--ion-color-light);
+ion-header {
+  ion-toolbar {
+    --background: var(--ion-color-primary); /* Azul primario */
+    --color: var(--ion-color-primary-contrast); /* Texto blanco */
+  }
+  ion-title {
+    text-align: left;
+    padding-left: 0;
+    font-size: 1.1em;
+    ion-note {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.8em;
+    }
+  }
+  ion-back-button {
+    --color: var(--ion-color-primary-contrast);
+    font-size: 1.8em; /* Tamaño de la flecha */
+  }
+  ion-button {
+    --color: var(--ion-color-primary-contrast);
+    ion-icon {
+      font-size: 1.8em; /* Tamaño del icono de llamada */
+    }
+  }
+}
 
+ion-content {
+  --background: var(--ion-color-light); /* Fondo más claro para el área de chat */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* Alinea el contenido hacia abajo */
+  padding-bottom: 0; /* Elimina padding extra en la parte inferior */
+
+  /* Oculta la barra de desplazamiento */
   &::-webkit-scrollbar {
     display: none;
   }
@@ -11,48 +42,56 @@ ion-content {
 ion-list {
   padding: 0;
   margin: 0;
-  background: transparent;
+  background: transparent; /* Fondo transparente para la lista de mensajes */
+  width: 100%; /* Asegura que la lista ocupe todo el ancho disponible */
 }
 
 ion-item {
-  --background: transparent;
+  --background: transparent; /* Fondo transparente para cada item de mensaje */
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --padding-end: 0;
+  --min-height: auto; /* Permite que el item se ajuste al contenido */
   display: flex;
-  align-items: flex-end;
-  width: 100%;
-  padding-bottom: 8px;
+  align-items: flex-end; /* Alinea los items al final verticalmente (bottom) */
+  width: 100%; /* Asegura que el item ocupe todo el ancho */
+  padding-bottom: 8px; /* Espacio entre burbujas */
   padding-top: 0;
 
   &.ion-text-right {
-    justify-content: flex-end;
+    justify-content: flex-end; /* Alinea la burbuja a la derecha */
   }
 }
 
 .message-bubble {
   padding: 10px 14px;
-  border-radius: 20px;
-  max-width: 80%;
-  word-wrap: break-word;
-  white-space: pre-wrap;
+  border-radius: 20px; /* Bordes redondeados */
+  max-width: 80%; /* Ancho máximo de la burbuja */
+  word-wrap: break-word; /* Rompe palabras largas */
+  white-space: pre-wrap; /* Mantiene saltos de línea */
   position: relative;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+  display: flex; /* Asegura que el contenido interno se distribuya correctamente */
+  flex-direction: column; /* Apila el texto y la hora */
 }
 
 .my-message {
-  background: var(--ion-color-primary);
+  background: var(--ion-color-primary); /* Azul para mis mensajes */
   color: var(--ion-color-primary-contrast);
-  margin-left: auto;
-  border-bottom-right-radius: 5px;
+  margin-left: auto; /* Empuja la burbuja a la derecha */
+  border-bottom-right-radius: 5px; /* Esquina inferior derecha menos redondeada */
 }
 
 .other-message {
-  background: var(--ion-color-light-shade);
+  background: var(--ion-color-light-shade); /* Gris claro para mensajes de otros */
   color: var(--ion-color-dark-shade);
-  margin-right: auto;
-  border-bottom-left-radius: 5px;
+  margin-right: auto; /* Empuja la burbuja a la izquierda */
+  border-bottom-left-radius: 5px; /* Esquina inferior izquierda menos redondeada */
 }
 
 .message-text {
   margin: 0;
+  padding: 0;
   line-height: 1.4;
 }
 
@@ -72,8 +111,10 @@ ion-item {
   }
 }
 
+/* Estilos para el footer de entrada de mensajes */
 ion-footer {
   ion-toolbar {
+    --background: var(--ion-color-light); /* Fondo del toolbar del footer */
     --padding-start: 0;
     --padding-end: 0;
     --padding-top: 0;
@@ -85,19 +126,89 @@ ion-footer {
   --inner-padding-end: 0;
   --inner-padding-start: 0;
   width: 100%;
-  padding-left: 16px;
+  padding-left: 16px; /* Padding a la izquierda del input */
+  padding-right: 8px; /* Padding a la derecha para los botones */
+  display: flex; /* Asegura que los elementos se alineen horizontalmente */
+  align-items: center; /* Centra verticalmente los elementos */
 
   ion-input {
     --padding-start: 0;
     --padding-end: 8px;
-    flex-grow: 1;
+    --padding-top: 10px;
+    --padding-bottom: 10px;
+    background: var(--ion-color-light-shade); /* Fondo gris claro para el input */
+    border-radius: 25px; /* Bordes redondeados */
+    font-size: 0.95em;
+    color: var(--ion-color-dark-shade);
+    flex-grow: 1; /* Permite que el input ocupe el espacio restante */
   }
 
   ion-buttons {
-    margin-inline-end: 8px;
+    margin-inline-end: 0; /* Elimina el margen por defecto de Ionic */
+    display: flex; /* Asegura que los botones se alineen horizontalmente */
+    align-items: center;
   }
 }
 
-ion-spinner {
-  --color: var(--ion-color-primary);
+ion-button {
+  --background: transparent;
+  --color: var(--ion-color-medium); /* Color de los iconos por defecto */
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  ion-icon {
+    font-size: 1.8em; /* Tamaño de los iconos de acción */
+  }
+}
+
+ion-button[disabled] {
+  opacity: 0.5;
+}
+
+/* Estilo específico para el botón de enviar */
+ion-button:first-of-type { /* El primer botón en ion-buttons es el de enviar */
+  --color: var(--ion-color-primary); /* Color azul para el icono de enviar */
+}
+
+/* Estilo para el botón de grabación activa */
+ion-button.recording-active {
+  --color: var(--ion-color-danger); /* Rojo para el icono de micrófono cuando está grabando */
+}
+
+/* Ocultar input de archivo */
+.hidden-file-input {
+  display: none;
+}
+
+/* Estilos para el contenido de mensajes de archivo/ubicación */
+.file-message-content, .location-message-content {
+  margin-top: 5px;
+  p {
+    margin-bottom: 5px;
+  }
+  .file-link, .location-link {
+    color: inherit; /* Hereda el color del texto de la burbuja */
+    text-decoration: underline;
+    font-size: 0.9em;
+  }
+}
+
+.message-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-top: 5px;
+}
+
+.message-audio, .message-video {
+  width: 100%;
+  margin-top: 5px;
+}
+
+/* Asegura que el cuerpo o el contenedor principal tengan un tamaño para que h-screen funcione */
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* Evita el scroll global si el chat es de altura completa */
 }

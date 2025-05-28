@@ -19,7 +19,6 @@ import { AuthService } from 'src/app/core/services/auth.service';
 })
 export class ChatComponent implements OnInit, OnDestroy {
   @ViewChild('messagesEnd') messagesEndRef!: ElementRef;
-  // CORRECCIÓN: Añadida la declaración para fileInput
   @ViewChild('fileInput') fileInput!: ElementRef;
 
   public currentUserUID: string | null = null;
@@ -34,10 +33,14 @@ export class ChatComponent implements OnInit, OnDestroy {
   public otherUserName: string | null = null;
   public chatId: string = '';
 
-  // CORRECCIÓN: Añadidas las declaraciones para la grabación de audio
   public isRecording: boolean = false;
   private mediaRecorder: MediaRecorder | undefined;
   private audioChunks: Blob[] = [];
+
+  // Eliminamos selectedFile y recordedAudioBlob ya que el contenido se envía inmediatamente.
+  // public selectedFile: File | null = null;
+  // public recordedAudioBlob: Blob | null = null;
+
 
   private authSubscription!: Subscription;
   private messagesSubscription!: Subscription;
@@ -68,10 +71,13 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroy$.unsubscribe();
+    if (this.isRecording && this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+      this.mediaRecorder.stop();
+    }
   }
 
   private setupAuthAndChat(): void {
-    this.authSubscription = this.authService.getAuthState().subscribe( // <-- CAMBIO AQUÍ
+    this.authSubscription = this.authService.getAuthState().subscribe(
       (user: User | null) => {
         if (user) {
           this.currentUserUID = user.uid;
@@ -90,7 +96,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         console.error("Error en la suscripción de authState:", err);
         this.error = `Error de autenticación: ${err.message}`;
         this.loading = false;
-        this.isAuthReady = true; // Se establece en true para indicar que el estado de autenticación ha sido procesado, aunque haya un error.
+        this.isAuthReady = true;
       }
     );
     this.destroy$.add(this.authSubscription);
@@ -122,8 +128,6 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   private listenForMessages(): void {
-    // CORRECCIÓN: La verificación !this.isAuthReady podría ser redundante si solo se llama desde setupAuthAndChat
-    // pero se mantiene para robustez si se pudiera llamar de forma independiente.
     if (!this.currentUserUID || !this.isAuthReady || !this.chatId) {
       return;
     }
@@ -146,18 +150,41 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.destroy$.add(this.messagesSubscription);
   }
 
+  // sendMessage AHORA SOLO MANEJA MENSAJES DE TEXTO
   public async sendMessage(): Promise<void> {
-    if (!this.newMessageText.trim() || !this.currentUserUID || !this.chatId) {
+    if (!this.newMessageText.trim()) {
+      console.log('No hay texto para enviar.');
       return;
     }
 
     try {
-      await this.chatService.sendMessage(this.chatId, this.currentUserUID, this.newMessageText.trim());
-      this.newMessageText = '';
+      console.log('Enviando mensaje de texto...');
+      await this.chatService.sendMessage(this.chatId, this.currentUserUID!, this.newMessageText.trim());
+      this.newMessageText = ''; // Limpiar el campo de texto
       setTimeout(() => this.scrollToBottom(), 100);
+      console.log('Mensaje de texto enviado y campo limpiado.');
     } catch (err: any) {
-      console.error("Error al enviar mensaje:", err);
+      console.error("Error al enviar mensaje de texto:", err);
       this.error = `Error al enviar mensaje: ${err.message}`;
+    }
+  }
+
+  // Función auxiliar para subir y enviar archivos (incluido audio)
+  private async uploadAndSendFile(file: File): Promise<void> {
+    try {
+      console.log(`Subiendo y enviando archivo: ${file.name}, tipo: ${file.type}`);
+      const fileUrl = await this.chatService.uploadFile(file);
+      await this.chatService.sendMessage(this.chatId, this.currentUserUID!, '', {
+        type: 'file',
+        fileUrl,
+        fileName: file.name,
+        mimeType: file.type,
+      });
+      setTimeout(() => this.scrollToBottom(), 100);
+      console.log('Archivo enviado exitosamente.');
+    } catch (error) {
+      console.error('Error al subir o enviar archivo:', error);
+      this.error = 'Error al enviar el archivo.';
     }
   }
 
@@ -195,9 +222,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     console.log(`Iniciando llamada Jitsi en: ${jitsiUrl}`);
   }
 
-  // Abrir selector de archivo
   triggerFileSelect(): void {
-    // Asegúrate de que fileInput esté disponible antes de intentar clickearlo
     if (this.fileInput) {
       this.fileInput.nativeElement.click();
     } else {
@@ -205,40 +230,27 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Manejar archivo seleccionado
+  // handleFileInput AHORA ENVÍA EL ARCHIVO INMEDIATAMENTE
   async handleFileInput(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
-    const file = input.files[0];
-    await this.uploadAndSendFile(file);
-    input.value = ''; // limpiar selección
-  }
-
-  // Subir archivo y enviar mensaje con info
-  private async uploadAndSendFile(file: File): Promise<void> {
-    try {
-      const fileUrl = await this.chatService.uploadFile(file);
-      await this.chatService.sendMessage(this.chatId, this.currentUserUID!, '', {
-        type: 'file',
-        fileUrl,
-        fileName: file.name,
-        mimeType: file.type,
-      });
-      this.scrollToBottom();
-    } catch (error) {
-      console.error('Error subiendo/enviando archivo:', error);
+    if (!input.files || input.files.length === 0) {
+      console.log('Selección de archivo cancelada o no se seleccionó ningún archivo.');
+      return;
     }
+    const file = input.files[0];
+    input.value = ''; // Limpiar el valor del input de archivo para permitir la misma selección de nuevo
+    await this.uploadAndSendFile(file); // Enviar inmediatamente
   }
 
-  // Grabación audio
+  // startAudioRecording YA ENVÍA EL AUDIO INMEDIATAMENTE (como lo proporcionaste)
   async startAudioRecording(): Promise<void> {
     if (this.isRecording) {
       // Si ya está grabando, detener la grabación
       if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
         this.mediaRecorder.stop();
+        console.log('Grabación detenida por el usuario.');
       }
       this.isRecording = false;
-      console.log('Grabación detenida.');
       return;
     }
 
@@ -254,9 +266,10 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
         const audioFile = new File([audioBlob], `audio_${Date.now()}.webm`, { type: 'audio/webm' });
-        await this.uploadAndSendFile(audioFile);
+        await this.uploadAndSendFile(audioFile); // Enviar inmediatamente
         // Detener la pista de audio del micrófono para liberar recursos
         stream.getTracks().forEach(track => track.stop());
+        console.log('Grabación finalizada y audio enviado.');
       };
 
       this.mediaRecorder.start();
@@ -264,19 +277,16 @@ export class ChatComponent implements OnInit, OnDestroy {
       console.log('Grabación iniciada...');
     } catch (error) {
       console.error('No se pudo acceder al micrófono:', error);
-      // CORRECCIÓN: Manejo de error más amigable en lugar de alert()
       this.error = 'No se pudo acceder al micrófono. Por favor, verifica los permisos.';
-      // Aquí podrías mostrar un modal o un mensaje de error en la UI
+      this.isRecording = false; // Asegurarse de que el estado de grabación se resetee
     }
   }
 
-  // Enviar ubicación
+  // sendLocation YA ENVÍA LA UBICACIÓN INMEDIATAMENTE (como lo proporcionaste)
   sendLocation(): void {
     if (!navigator.geolocation) {
       console.error('Geolocalización no soportada por el navegador');
-      // CORRECCIÓN: Reemplazado alert() con un mensaje en la consola y un error en la UI
       this.error = 'Geolocalización no soportada por su navegador.';
-      // Aquí podrías mostrar un modal o un mensaje de error en la UI
       return;
     }
 
@@ -290,6 +300,7 @@ export class ChatComponent implements OnInit, OnDestroy {
             longitude,
           });
           this.scrollToBottom();
+          console.log('Ubicación enviada exitosamente.');
         } catch (error) {
           console.error('Error enviando ubicación:', error);
           this.error = 'Error al enviar la ubicación.';
@@ -297,9 +308,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       },
       (error) => {
         console.error('Error obteniendo ubicación:', error);
-        // CORRECCIÓN: Reemplazado alert() con un mensaje en la consola y un error en la UI
         this.error = 'No se pudo obtener la ubicación. Por favor, verifica los permisos.';
-        // Aquí podrías mostrar un modal o un mensaje de error en la UI
       }
     );
   }
