@@ -38,5 +38,8 @@ project(':capacitor-storage').projectDir = new File('../node_modules/@capacitor/
 include ':capawesome-capacitor-file-picker'
 project(':capawesome-capacitor-file-picker').projectDir = new File('../node_modules/@capawesome/capacitor-file-picker/android')
 
+include ':capacitor-voice-recorder'
+project(':capacitor-voice-recorder').projectDir = new File('../node_modules/capacitor-voice-recorder/android')
+
 include ':my-custom-plugin'
 project(':my-custom-plugin').projectDir = new File('../my-custom-plugin/android')
